@@ -2,7 +2,7 @@
 
 CURRENT_PHASE: 0
 LAST_AUDIT: 2026-07-03, /security-review per iteration through SP-DP-010. Found+fixed: SP-DP-004 Low (prototype-chain unit lookup), SP-DP-005 F-crit (SSRF/store-root escape, safeSubpath allowlist). SP-DP-001/002/003/006/010 clean. ZEP0005 posture verifier CONFIRMED.
-OPEN_ESCALATION: docs/autonomy/ESCALATION.md (2026-07-03): Phase 0 gate blocked on the human-provisioned demo mirror (SP-DP-007/008 measurement) and the ADR-0008 amendment adopting the Q1 tier-C rule. 6 of 9 data-plane P0 REQs met; 007/008 implementation + local-proxy PASS complete.
+OPEN_ESCALATION: docs/autonomy/ESCALATION.md (2026-07-03): Phase 0 gate blocked on the human-provisioned demo mirror (SP-DP-007/008 measurement) and the ADR-0008 amendment adopting the Q1 tier-C rule. 7 of 9 data-plane P0 REQs met; 007/008 implementation + local-proxy PASS complete.
 
 ## How to read this file
 
@@ -58,8 +58,12 @@ Mirror bucket: blocked on two prerequisites, deliberately unchecked. It carries 
 - First-run content measure (max-width) is an open brief gap, to be settled when the Phase 1 first-run surface is designed, not guessed earlier.
 - sprism CLI stub returns exit 1 by design until CLI v0 lands.
 - AuthorizedHttpStorage (stores/icechunk.ts) mirrors icechunk-js HttpStorage semantics because upstream only takes static headers; propose a fetch-injection option upstream (Q5 contribution posture), then delete the mirror.
-- SP-DP-010 must include a hostile-virtual-ref fixture: a repo whose virtual chunk location points at a foreign host, asserting an origin-scoped hook attaches nothing there (sharp edge documented on RequestAuthorizer, security review 2026-07-03).
 - Multiscales levels[].path (conventions/geozarr.ts) is attacker-controlled and inert today; when a Phase 1 REQ opens pyramid levels to render tiles, route those paths through safeSubpath before any fetch (same trust boundary as the binding paths; security review 2026-07-03).
+- Open Phase 0 Stage-1 scope not yet built (not P0-gate-cited, but named in ROADMAP line 9 / CLAUDE.md Current Phase): the memory governor (invariant 9; SP-DP-014 is P1) and the chunk cache/scheduler. Alongside CLI v0. Recorded per spec-auditor F-2, 2026-07-03.
+- Coalesced-abort spillover (code-review F5, 2026-07-03): zarrita withRangeCoalescing merges abort signals, so one caller's abort can reject batchmates. This is the documented ARCHITECTURE 2.6 caveat; the fix (retry-once-on-foreign-abort or a group-by-abort-scope option) and its abort-scope conformance test are SP-DP-013 (P1) work.
+- Sidecar/on-the-fly sum uses sequential accumulation vs numpy pairwise (code-review F9); bitwise-identical only for exactly-representable data (int16 today). Revisit with Neumaier summation before float cubes (ADR-0008 territory).
+- fwhm_nm-named array without a units attr inherits the wavelength's declared unit rather than nm (code-review F8, minor); tighten when the FWHM path gets real fixtures.
+- SP-DP-005 re-verify obligation (spec-auditor F-3): binding round-trip is proven generator->browser; re-verify CLI->browser when CLI v0 lands (the producer half). SP-DP-006: the "warns" half surfaces only when a UI warning exists (Phase 1).
 
 ## Decisions Journal
 

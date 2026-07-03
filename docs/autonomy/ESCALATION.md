@@ -44,7 +44,7 @@ The Phase 0 gate also requires "the Q1 capability-tier table written and adopted
 
 ## State at escalation
 
-- **Met and green on `main` (6 of 9 data-plane P0 REQs):** SP-DP-001, 002, 003, 004, 005, 006, plus SP-DP-010 and SP-UX-001. CI green; Pages live.
+- **Met and green on `main` (7 of 9 data-plane P0 REQs):** SP-DP-001, 002, 003, 004, 005, 006, 010, plus SP-UX-001. CI green; Pages live.
 - **Implementation + local-proxy PASS, gate-blocked:** SP-DP-007, SP-DP-008.
 - **Written, adoption pending your amendment:** Q1 capability-tier table.
 - No ADRs or REQUIREMENTS.md were modified by the loop. No stop condition other than this one fired.

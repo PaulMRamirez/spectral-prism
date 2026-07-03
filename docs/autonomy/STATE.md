@@ -1,7 +1,7 @@
 # Spectral Prism: Loop State Ledger
 
 CURRENT_PHASE: 0
-LAST_AUDIT: none (audit:prod clean locally and in CI, 2026-07-02; first full /security-review fires on its Section 4 trigger list during Phase 0 iterations)
+LAST_AUDIT: 2026-07-02, /security-review on the SP-DP-001 diff (triggers: store abstraction, dependency addition, external-byte parsing): zero HIGH/MEDIUM findings; advisory origin-scoping note applied to RequestAuthorizer docs
 OPEN_ESCALATION: none
 
 ## How to read this file
@@ -10,17 +10,17 @@ Single source of loop truth, updated at the end of every iteration (session prot
 
 ## Requirement Status: Phase 0
 
-| REQ       | Status | Evidence | Notes                            |
-| --------- | ------ | -------- | -------------------------------- |
-| SP-DP-001 | unmet  |          |                                  |
-| SP-DP-002 | unmet  |          |                                  |
-| SP-DP-003 | unmet  |          |                                  |
-| SP-DP-004 | unmet  |          |                                  |
-| SP-DP-005 | unmet  |          |                                  |
-| SP-DP-006 | unmet  |          |                                  |
-| SP-DP-007 | unmet  |          | perf: record ms against baseline |
-| SP-DP-008 | unmet  |          | perf: record s against baseline  |
-| SP-DP-010 | unmet  |          |                                  |
+| REQ       | Status | Evidence                                                                                                                                                                                                                                                    | Notes                                                                                 |
+| --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| SP-DP-001 | met    | Commit aa9846d: 10-test store-conformance suite over loopback HTTP against zarr-python-generated fixtures (v2 zlib, v3 gzip, sharded v3); shard reads ranged and coalesced (fewer requests than inner chunks; coalescer flush reports; baseline comparison) | zarrita pinned ^0.7.3; useSuffixRequest off by default (HEAD + offset range fallback) |
+| SP-DP-002 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
+| SP-DP-003 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
+| SP-DP-004 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
+| SP-DP-005 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
+| SP-DP-006 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
+| SP-DP-007 | unmet  |                                                                                                                                                                                                                                                             | perf: record ms against baseline                                                      |
+| SP-DP-008 | unmet  |                                                                                                                                                                                                                                                             | perf: record s against baseline                                                       |
+| SP-DP-010 | unmet  |                                                                                                                                                                                                                                                             |                                                                                       |
 
 Bootstrap items (pre-REQ): monorepo scaffold [x], verify vocabulary wired [x], hooks confirmed firing [x], CI green on placeholder [x], Pages deploy live [x], DESIGN-BRIEF v1 authored [x], governance scaffold [x], name-collision scan [x], mirror bucket [ ], capability-tier table (Q1) [x], icechunk-js posture (Q5) [x].
 
@@ -59,3 +59,4 @@ Mirror bucket: blocked on two prerequisites, deliberately unchecked. It carries 
 - 2026-07-02: Section 8 bootstrap executed end to end (governance dbe7c28, docs c8c73c0, brief amendment 8aa66f2, scaffold 9116bba). Research ran as a 20-agent verified workflow (wf_4f11d0c7-7fb): name scan (keep spectral-prism + sprism; prism-core publishes scoped only), Q1 tier table drafted for gate adoption, Q5 resolved as exact-pin icechunk-js 0.6.0 with the official Earthmover wasm bindings watched as successor.
 - 2026-07-02: /init review skipped deliberately: CLAUDE.md is hand-authored and current; regenerating it risked destroying the baseline. Memory anchor written to the session memory store instead (AUTONOMY-PLAN Section 8 step 2 intent preserved).
 - 2026-07-02: Commit order enforced brief-before-UI so SP-UX-001 holds in git history, not just in the working tree.
+- 2026-07-02: SP-DP-001 shipped (aa9846d). Selected as lowest unmet P0; plan named the acceptance criterion and the proving test up front. API facts verified against zarrita 0.7.3's shipped types plus a research cross-check workflow (wf_67f6eb25-d34). Notes banked for later iterations: zarrita's default chunk queue is unbounded (SP-DP-013 must supply its own), AsyncReadable's options type changed in zarrita 0.7.0 so the icechunk-js pin must be version-matched at that boundary (SP-DP-002), useSuffixRequest stays off by default for host compatibility. /simplify ran inline (three fixes) after the parallel-agent form was declined; the lighter inline form is the standing preference for cleanup passes.

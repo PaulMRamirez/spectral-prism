@@ -1,0 +1,36 @@
+{
+  "attributes": {
+    "zarr_conventions": [
+      {
+        "name": "proj",
+        "uuid": "f17cb550-5864-4468-aeb7-f3180cfb622f",
+        "schema_url": "https://raw.githubusercontent.com/zarr-conventions/proj/refs/tags/v0.1/schema.json"
+      },
+      {
+        "name": "spatial",
+        "uuid": "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
+        "schema_url": "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v0.1/schema.json"
+      },
+      {
+        "name": "multiscales",
+        "uuid": "d35379db-88df-4056-af3a-620245f8e347",
+        "schema_url": "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/tags/v0.1/schema.json"
+      }
+    ],
+    "proj:code": "EPSG:32611",
+    "spatial:transform": [
+      30.0,
+      0.0,
+      499980.0,
+      0.0,
+      -30.0,
+      3800040.0
+    ],
+    "spatial:dimensions": [
+      "y",
+      "x"
+    ]
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

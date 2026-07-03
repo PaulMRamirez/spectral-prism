@@ -18,6 +18,14 @@ export {
   type SpectralAxis,
 } from './conventions/geozarr';
 export { nanometersPerUnit, toNanometers } from './conventions/wavelength-units';
+export {
+  BINDING_ATTRIBUTE,
+  readDualLayoutBinding,
+  type BindingDegradation,
+  type DualLayoutBinding,
+  type LayoutBinding,
+} from './binding/dual-layout';
+export { scopedReadable } from './stores/scoped-readable';
 
 export { createAuthorizedFetch } from './stores/authorized-fetch';
 export {

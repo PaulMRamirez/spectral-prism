@@ -1,0 +1,51 @@
+{
+ "dual-layout-full": {
+  "version": 1,
+  "spectralPath": "spectral",
+  "spectralCrs": "EPSG:32611",
+  "spatialPath": "spatial",
+  "spatialCrs": "EPSG:3857",
+  "spatialLevels": [
+   "0",
+   "1"
+  ],
+  "provenance": {
+   "generator": "generate_store_fixtures.py",
+   "source": "synthetic"
+  },
+  "degradations": []
+ },
+ "dual-layout-spectral-only": {
+  "version": 1,
+  "spectralPath": "spectral",
+  "spectralCrs": "EPSG:32611",
+  "spatialPath": null,
+  "spatialCrs": null,
+  "spatialLevels": null,
+  "provenance": {
+   "generator": "generate_store_fixtures.py",
+   "source": "synthetic"
+  },
+  "degradations": [
+   "single-layout-spectral-only"
+  ]
+ },
+ "dual-layout-spatial-only": {
+  "version": 1,
+  "spectralPath": null,
+  "spectralCrs": null,
+  "spatialPath": "spatial",
+  "spatialCrs": "EPSG:3857",
+  "spatialLevels": [
+   "0",
+   "1"
+  ],
+  "provenance": {
+   "generator": "generate_store_fixtures.py",
+   "source": "synthetic"
+  },
+  "degradations": [
+   "single-layout-spatial-only"
+  ]
+ }
+}

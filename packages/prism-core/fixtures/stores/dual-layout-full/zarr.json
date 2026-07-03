@@ -1,0 +1,19 @@
+{
+  "attributes": {
+    "spectral_prism:binding": {
+      "version": 1,
+      "provenance": {
+        "generator": "generate_store_fixtures.py",
+        "source": "synthetic"
+      },
+      "spectral": {
+        "path": "spectral"
+      },
+      "spatial": {
+        "path": "spatial"
+      }
+    }
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

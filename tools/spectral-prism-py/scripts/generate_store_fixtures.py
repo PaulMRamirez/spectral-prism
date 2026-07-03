@@ -271,6 +271,99 @@ def write_geozarr_variant(
     return expected
 
 
+def write_dual_layout_variant(name: str, *, spectral: bool, spatial: bool) -> dict:
+    """A spectral_prism:binding store; returns the expected-binding fragment."""
+    from zarr.codecs import BytesCodec, GzipCodec
+
+    root_path = FIXTURES / name
+    binding: dict = {
+        "version": 1,
+        "provenance": {"generator": "generate_store_fixtures.py", "source": "synthetic"},
+    }
+    if spectral:
+        binding["spectral"] = {"path": "spectral"}
+    if spatial:
+        binding["spatial"] = {"path": "spatial"}
+
+    group = zarr.open_group(str(root_path), mode="w", zarr_format=3)
+    group.attrs.update({"spectral_prism:binding": binding})
+
+    codec_kwargs = dict(serializer=BytesCodec(endian="little"), compressors=GzipCodec(level=5))
+
+    if spectral:
+        # Spectral-major layout: always native CRS (ADR-0007).
+        sg = group.create_group("spectral")
+        sg.attrs.update({**GEOREF_ATTRS})
+        cube = reflectance_ramp(4, 8, 8)
+        arr = sg.create_array(
+            "cube", shape=cube.shape, chunks=(4, 4, 4), dtype="int16",
+            fill_value=-9999, **codec_kwargs,
+        )
+        arr[:] = cube
+        wl = sg.create_array("wavelengths", shape=(4,), chunks=(4,), dtype="float64", **codec_kwargs)
+        wl[:] = WAVELENGTHS_NM
+        wl.attrs["units"] = "nm"
+
+    if spatial:
+        # Spatial-major pyramid: ingest-warped to a display CRS, so its CRS
+        # legitimately differs from the spectral layout (ADR-0007).
+        pg = group.create_group("spatial")
+        pg.attrs.update(
+            {
+                "zarr_conventions": GEOREF_ATTRS["zarr_conventions"],
+                "proj:code": "EPSG:3857",
+                "spatial:transform": [60.0, 0.0, -13358338.0, 0.0, -60.0, 4300621.0],
+                "spatial:dimensions": ["y", "x"],
+                "multiscales": {
+                    "layout": [
+                        {"asset": "0"},
+                        {"asset": "1", "derived_from": "0",
+                         "transform": {"scale": [4.0, 4.0]}, "resampling_method": "average"},
+                    ],
+                    "resampling_method": "average",
+                },
+            }
+        )
+        base = reflectance_ramp(3, 8, 8)
+        for level, factor in (("0", 1), ("1", 4)):
+            data = base[:, ::factor, ::factor]
+            arr = pg.create_array(
+                level, shape=data.shape, chunks=(1, 4, 4), dtype="int16",
+                fill_value=-9999, **codec_kwargs,
+            )
+            arr[:] = data
+
+    expected: dict = {
+        "version": 1,
+        "spectralPath": "spectral" if spectral else None,
+        "spectralCrs": "EPSG:32611" if spectral else None,
+        "spatialPath": "spatial" if spatial else None,
+        "spatialCrs": "EPSG:3857" if spatial else None,
+        "spatialLevels": ["0", "1"] if spatial else None,
+        "provenance": binding["provenance"],
+        "degradations": (
+            []
+            if spectral and spatial
+            else (["single-layout-spectral-only"] if spectral else ["single-layout-spatial-only"])
+        ),
+    }
+    return expected
+
+
+def write_dual_layout() -> None:
+    bindings = {
+        "dual-layout-full": write_dual_layout_variant("dual-layout-full", spectral=True, spatial=True),
+        "dual-layout-spectral-only": write_dual_layout_variant(
+            "dual-layout-spectral-only", spectral=True, spatial=False
+        ),
+        "dual-layout-spatial-only": write_dual_layout_variant(
+            "dual-layout-spatial-only", spectral=False, spatial=True
+        ),
+    }
+    out = FIXTURES / "expected" / "dual-layout-bindings.json"
+    out.write_text(json.dumps(bindings, indent=1))
+
+
 def write_geozarr() -> None:
     models = {
         "geozarr-full": write_geozarr_variant("geozarr-full", georef=True, wavelengths_unit="nm"),
@@ -303,6 +396,7 @@ def main() -> int:
     write_v3()
     write_v3_sharded()
     write_geozarr()
+    write_dual_layout()
     verify_roundtrip()
     print(f"fixtures written to {FIXTURES} (zarr-python {zarr.__version__})")
     return 0

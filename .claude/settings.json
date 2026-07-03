@@ -1,0 +1,47 @@
+{
+  "$comment": "Spectral Prism autonomy hooks. Stop gate mirrors the /goal checker and CI: nothing completes without pnpm verify. PreToolUse protects the baseline documents from casual edits (amendment protocol only). PostToolUse keeps formatting deterministic so /simplify spends itself on substance.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -qE '(docs/adr/|REQUIREMENTS\\.md|docs/reviews/)' && { echo 'BLOCKED: baseline documents change only via the amendment protocol (propose in ESCALATION.md or a new ADR; human disposes).' >&2; exit 2; } || exit 0"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx|*.js|*.jsx|*.css|*.json|*.md) pnpm exec prettier --write \"$f\" >/dev/null 2>&1 || true;; esac; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if git -C . diff --quiet && git -C . diff --cached --quiet; then exit 0; fi; pnpm verify >/tmp/verify.log 2>&1 && exit 0 || { echo 'BLOCKED: pnpm verify failing; fix before stopping (tail of log follows).' >&2; tail -30 /tmp/verify.log >&2; exit 2; }"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '--- autonomy context ---'; [ -f docs/autonomy/STATE.md ] && sed -n '1,25p' docs/autonomy/STATE.md; [ -f docs/autonomy/ESCALATION.md ] && echo 'OPEN ESCALATION PRESENT: read docs/autonomy/ESCALATION.md before any work.'; exit 0"
+          }
+        ]
+      }
+    ]
+  }
+}

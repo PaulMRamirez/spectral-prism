@@ -1,0 +1,48 @@
+name: ci
+
+# Mirrors the /goal verification gates so the completion checker, the developer,
+# the Stop hook, and CI all run the same vocabulary (AUTONOMY-PLAN Section 9;
+# pattern inherited from bessel and vector-channels). Single Ubuntu job for
+# speed. Tier-A (WebGPU) kernel e2e runs on Chromium with WebGPU flags; the
+# wasm tier runs everywhere and is the parity anchor (ADR-0008).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Gate (typecheck, lint, test, build:web, size)
+        run: pnpm verify
+
+      - name: Kernel parity vs oracle (wasm tier + golden scene, ADR-0008)
+        run: pnpm test:parity
+
+      - name: Dependency audit (production, high and critical)
+        run: pnpm audit:prod
+
+      - name: Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End to end (wasm tier everywhere; WebGPU where the runner allows)
+        run: pnpm e2e
+
+      - name: Lighthouse budgets (after Phase 1)
+        if: ${{ hashFiles('lighthouserc.json') != '' }}
+        run: pnpm lhci

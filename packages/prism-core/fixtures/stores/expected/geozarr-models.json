@@ -1,0 +1,117 @@
+{
+ "geozarr-full": {
+  "degradations": [],
+  "crsCode": "EPSG:32611",
+  "transform": [
+   30.0,
+   0.0,
+   499980.0,
+   0.0,
+   -30.0,
+   3800040.0
+  ],
+  "multiscalePaths": [
+   "0",
+   "1"
+  ],
+  "wavelengthsNm": [
+   450.5,
+   550.25,
+   650.0,
+   850.0
+  ],
+  "fwhmNm": [
+   5.0,
+   5.0,
+   6.0,
+   6.0
+  ],
+  "goodBands": [
+   1,
+   1,
+   0,
+   1
+  ]
+ },
+ "geozarr-microns": {
+  "degradations": [],
+  "crsCode": "EPSG:32611",
+  "transform": [
+   30.0,
+   0.0,
+   499980.0,
+   0.0,
+   -30.0,
+   3800040.0
+  ],
+  "multiscalePaths": [
+   "0",
+   "1"
+  ],
+  "wavelengthsNm": [
+   450.5,
+   550.25,
+   650.0,
+   850.0
+  ],
+  "fwhmNm": [
+   5.0,
+   5.0,
+   6.0,
+   6.0
+  ],
+  "goodBands": [
+   1,
+   1,
+   0,
+   1
+  ]
+ },
+ "geozarr-pixel-only": {
+  "degradations": [
+   "missing-georeferencing"
+  ],
+  "crsCode": null,
+  "transform": null,
+  "multiscalePaths": null,
+  "wavelengthsNm": [
+   450.5,
+   550.25,
+   650.0,
+   850.0
+  ],
+  "fwhmNm": [
+   5.0,
+   5.0,
+   6.0,
+   6.0
+  ],
+  "goodBands": [
+   1,
+   1,
+   0,
+   1
+  ]
+ },
+ "geozarr-no-wavelengths": {
+  "degradations": [
+   "missing-wavelengths"
+  ],
+  "crsCode": "EPSG:32611",
+  "transform": [
+   30.0,
+   0.0,
+   499980.0,
+   0.0,
+   -30.0,
+   3800040.0
+  ],
+  "multiscalePaths": [
+   "0",
+   "1"
+  ],
+  "wavelengthsNm": null,
+  "fwhmNm": null,
+  "goodBands": null
+ }
+}

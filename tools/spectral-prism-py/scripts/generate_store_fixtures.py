@@ -160,12 +160,149 @@ def verify_roundtrip() -> None:
     print("round-trip verification passed")
 
 
+# Convention metadata objects per the Zarr Conventions Framework (array of
+# objects, never strings; UUID is the permanent id, tagged schema_url pinned).
+# Sources verified 2026-07-02: docs/research/geozarr-vocabulary.md.
+GEOREF_ATTRS = {
+    "zarr_conventions": [
+        {
+            "name": "proj",
+            "uuid": "f17cb550-5864-4468-aeb7-f3180cfb622f",
+            "schema_url": "https://raw.githubusercontent.com/zarr-conventions/proj/refs/tags/v0.1/schema.json",
+        },
+        {
+            "name": "spatial",
+            "uuid": "689b58e2-cf7b-45e0-9fff-9cfc0883d6b4",
+            "schema_url": "https://raw.githubusercontent.com/zarr-conventions/spatial/refs/tags/v0.1/schema.json",
+        },
+        {
+            "name": "multiscales",
+            "uuid": "d35379db-88df-4056-af3a-620245f8e347",
+            "schema_url": "https://raw.githubusercontent.com/zarr-conventions/multiscales/refs/tags/v0.1/schema.json",
+        },
+    ],
+    "proj:code": "EPSG:32611",
+    "spatial:transform": [30.0, 0.0, 499980.0, 0.0, -30.0, 3800040.0],
+    "spatial:dimensions": ["y", "x"],
+}
+
+
+def write_geozarr_variant(
+    name: str,
+    *,
+    georef: bool,
+    wavelengths_unit: str | None,
+) -> dict:
+    """One convention-annotated store; returns the expected-model fragment."""
+    from zarr.codecs import BytesCodec, GzipCodec
+
+    root_path = FIXTURES / name
+    attrs: dict = {"title": f"SP-DP-004 {name} fixture"}
+    if georef:
+        attrs.update(GEOREF_ATTRS)
+        # multiscales convention v0.1: single object, layout[].asset paths.
+        attrs["multiscales"] = {
+            "layout": [
+                {"asset": "0"},
+                {
+                    "asset": "1",
+                    "derived_from": "0",
+                    "transform": {"scale": [2.0, 2.0], "translation": [0.5, 0.5]},
+                },
+            ],
+            "resampling_method": "average",
+        }
+    group = zarr.open_group(str(root_path), mode="w", zarr_format=3)
+    group.attrs.update(attrs)
+
+    cube = reflectance_ramp(4, 8, 8)
+    arr = group.create_array(
+        "reflectance",
+        shape=cube.shape,
+        chunks=(2, 4, 4),
+        dtype="int16",
+        serializer=BytesCodec(endian="little"),
+        compressors=GzipCodec(level=5),
+        fill_value=-9999,
+    )
+    arr[:] = cube
+
+    expected: dict = {
+        "degradations": [],
+        "crsCode": "EPSG:32611" if georef else None,
+        "transform": GEOREF_ATTRS["spatial:transform"] if georef else None,
+        "multiscalePaths": ["0", "1"] if georef else None,
+        "wavelengthsNm": None,
+        "fwhmNm": None,
+        "goodBands": None,
+    }
+    if not georef:
+        expected["degradations"].append("missing-georeferencing")
+
+    if wavelengths_unit is None:
+        expected["degradations"].append("missing-wavelengths")
+    else:
+        factor = 1.0 if wavelengths_unit == "nm" else 1e-3
+        wl = group.create_array(
+            "wavelengths", shape=(4,), chunks=(4,), dtype="float64",
+            serializer=BytesCodec(endian="little"), compressors=GzipCodec(level=5),
+        )
+        wl[:] = WAVELENGTHS_NM * factor
+        wl.attrs["units"] = wavelengths_unit
+        wl.attrs["standard_name"] = "radiation_wavelength"
+
+        fwhm = group.create_array(
+            "fwhm", shape=(4,), chunks=(4,), dtype="float64",
+            serializer=BytesCodec(endian="little"), compressors=GzipCodec(level=5),
+        )
+        fwhm[:] = np.array([5.0, 5.0, 6.0, 6.0]) * factor
+        fwhm.attrs["units"] = wavelengths_unit
+
+        good = group.create_array(
+            "good_wavelengths", shape=(4,), chunks=(4,), dtype="uint8",
+            serializer=BytesCodec(endian="little"), compressors=GzipCodec(level=5),
+        )
+        good[:] = np.array([1, 1, 0, 1], dtype=np.uint8)
+
+        expected["wavelengthsNm"] = [float(v) for v in WAVELENGTHS_NM]
+        expected["fwhmNm"] = [5.0, 5.0, 6.0, 6.0]
+        expected["goodBands"] = [1, 1, 0, 1]
+
+    return expected
+
+
+def write_geozarr() -> None:
+    models = {
+        "geozarr-full": write_geozarr_variant("geozarr-full", georef=True, wavelengths_unit="nm"),
+        "geozarr-microns": write_geozarr_variant("geozarr-microns", georef=True, wavelengths_unit="um"),
+        "geozarr-pixel-only": write_geozarr_variant("geozarr-pixel-only", georef=False, wavelengths_unit="nm"),
+        "geozarr-no-wavelengths": write_geozarr_variant("geozarr-no-wavelengths", georef=True, wavelengths_unit=None),
+    }
+    out = FIXTURES / "expected" / "geozarr-models.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(models, indent=1))
+
+
 def main() -> int:
     if FIXTURES.exists():
-        shutil.rmtree(FIXTURES)
+        for entry in FIXTURES.iterdir():
+            # Icechunk fixtures (and their expected JSON) come from the
+            # sibling script; leave them untouched.
+            if entry.name.startswith("icechunk") or entry.name == "blobs":
+                continue
+            if entry.name == "expected":
+                for f in entry.iterdir():
+                    if not f.name.startswith("icechunk"):
+                        f.unlink()
+                continue
+            if entry.is_dir():
+                shutil.rmtree(entry)
+            elif entry.name != "README.md":
+                entry.unlink()
     write_v2()
     write_v3()
     write_v3_sharded()
+    write_geozarr()
     verify_roundtrip()
     print(f"fixtures written to {FIXTURES} (zarr-python {zarr.__version__})")
     return 0

@@ -7,6 +7,18 @@
  */
 export const PRISM_CORE_STAGE = 1 as const;
 
+export {
+  readGeoZarr,
+  type AffineTransform,
+  type ConventionDegradation,
+  type CrsInfo,
+  type GeoZarrModel,
+  type MultiscaleLevelInfo,
+  type MultiscalesInfo,
+  type SpectralAxis,
+} from './conventions/geozarr';
+export { nanometersPerUnit, toNanometers } from './conventions/wavelength-units';
+
 export { createAuthorizedFetch } from './stores/authorized-fetch';
 export {
   createIcechunkStore,

@@ -1,0 +1,20 @@
+{
+  "name": "prism-core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Shared substrate for spectral-prism and raster-prism: store abstraction, chunk cache/scheduler, GeoZarr convention reader, memory governor (ADR-0006 Stage 1). Publish name decided after the Phase 0 name-collision scan.",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

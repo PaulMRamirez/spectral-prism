@@ -1,0 +1,5 @@
+{
+  "description": "Tiny synthetic reflectance vector for the parity-harness skeleton. Real oracle fixtures (NumPy/SciPy PCA, MNF, SAM on synthetic cubes plus the committed AVIRIS golden scene) land with SP-CP-001; this fixture only proves the harness plumbing.",
+  "wavelengthsNm": [450, 550, 650, 850, 1240, 1650, 2210],
+  "values": [0.041, 0.063, 0.055, 0.312, 0.298, 0.187, 0.121]
+}

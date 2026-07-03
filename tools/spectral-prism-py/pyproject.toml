@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sprism"
+version = "0.0.0"
+description = "CLI for Spectral Prism: materializes archival imaging-spectroscopy granules into dual-layout GeoZarr (spectral-major + spatial-major pyramid with ZEP0005-aligned per-chunk stats) and Icechunk virtual references. Name verified free on PyPI 2026-07-02 (docs/research/name-collision-scan.md); first publish ships with CLI v0, not before."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+classifiers = ["Development Status :: 1 - Planning"]
+
+[project.scripts]
+sprism = "sprism.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sprism"]

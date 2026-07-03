@@ -1,0 +1,43 @@
+{
+  "name": "spectral-prism-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@11.6.0",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm build:web && pnpm size",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:parity": "vitest run --config vitest.parity.config.ts",
+    "build:web": "pnpm --filter spectral-prism build",
+    "build:pages": "SPECTRAL_PRISM_BASE=/spectral-prism/ pnpm --filter spectral-prism build",
+    "size": "size-limit",
+    "audit:prod": "pnpm audit --prod --audit-level high",
+    "e2e": "playwright test",
+    "lhci": "lhci autorun"
+  },
+  "size-limit": [
+    {
+      "name": "initial interactive bundle (SP-XP-004: under 5 MB)",
+      "path": "packages/spectral-prism/dist/assets/*.js",
+      "limit": "5 MB"
+    }
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@playwright/test": "^1.50.0",
+    "@size-limit/file": "^11.0.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "size-limit": "^11.0.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,8 @@
+# Baseline documents change only via the amendment protocol; keep tooling away
+REQUIREMENTS.md
+docs/adr/
+docs/reviews/
+pnpm-lock.yaml
+dist/
+playwright-report/
+test-results/

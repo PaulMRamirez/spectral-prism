@@ -1,0 +1,57 @@
+/* Token subset from docs/design/DESIGN-BRIEF.md Section 3, defined here until
+   the prism-core panel shell exists (Stage 2 extraction). Names and values are
+   the brief's exactly (TK-1, TK-2); components consume tokens by name only. */
+:root {
+  --prism-surface-0: #0a0908;
+  --prism-ink-primary: #e9e5df;
+  --prism-ink-secondary: #b3aca2;
+  --prism-ink-muted: #877f74;
+  --prism-font-ui: 'Inter', 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  --prism-font-data: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+  --prism-type-micro: 11px;
+  --prism-type-micro-line: 16px;
+  --prism-type-body: 13px;
+  --prism-type-body-line: 20px;
+  --prism-type-display: 25px;
+  --prism-type-display-line: 32px;
+  --prism-space-1: 8px;
+  --prism-space-2: 16px;
+  --prism-space-3: 24px;
+  --prism-space-8: 64px;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--prism-surface-0);
+  color: var(--prism-ink-primary);
+  font-family: var(--prism-font-ui);
+}
+
+/* Pre-first-run placeholder: display type is permitted here (type ladder 3.9,
+   first-run hero only), never inside the triad. */
+.shell {
+  padding: var(--prism-space-8) var(--prism-space-3);
+}
+
+.shell-title {
+  margin: 0 0 var(--prism-space-2);
+  font-size: var(--prism-type-display);
+  line-height: var(--prism-type-display-line);
+  font-weight: 600;
+}
+
+.shell-positioning {
+  margin: 0 0 var(--prism-space-3);
+  color: var(--prism-ink-secondary);
+  font-size: var(--prism-type-body);
+  line-height: var(--prism-type-body-line);
+}
+
+.shell-status {
+  margin: 0;
+  font-family: var(--prism-font-data);
+  font-size: var(--prism-type-micro);
+  line-height: var(--prism-type-micro-line);
+  color: var(--prism-ink-muted);
+}

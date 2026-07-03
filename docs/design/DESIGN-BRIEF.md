@@ -1,6 +1,6 @@
 # Spectral Prism Design Brief
 
-**Status:** v1.0, 2026-07-02, expanded from seed v0.1 per AUTONOMY-PLAN Section 8 step 3; the design-reviewer subagent enforces this document.
+**Status:** v1.1, 2026-07-02, expanded from seed v0.1 per AUTONOMY-PLAN Section 8 step 3; the design-reviewer subagent enforces this document. Amendment 1 (v1.1, 2026-07-02): TK-5 names the type-ladder line-height tokens, closing a TK-1/TK-2 conflict found in design review.
 
 This document is normative. Rules carry stable IDs (TK, CD, TY, DN, QI, MO, SIG, VOC, AX, REF, AM); the design-reviewer cites rule IDs in APPROVE and REJECT verdicts, and a change that violates a numbered rule is a REJECT naming the rule. Where a rule commits a value, the value is the specification; adjectives elsewhere do not override a committed value. Where this document is silent, the reviewer flags a DESIGN-BRIEF gap for amendment (Section 14) and never improvises. Where two rules appear to conflict, the stricter rule governs until an amendment resolves the text.
 
@@ -31,138 +31,140 @@ Spectral Prism should feel like a **precision optical instrument**: the calm aut
 
 Exactly five surfaces. Elevation is expressed by stepping up this ladder, never by shadows or borders alone. A component that needs a sixth surface has a design problem, not a token gap.
 
-| Token | Value | Role |
-|---|---|---|
+| Token               | Value     | Role                                                        |
+| ------------------- | --------- | ----------------------------------------------------------- |
 | `--prism-surface-0` | `#0A0908` | App canvas; data-panel ground (map nodata, plot background) |
-| `--prism-surface-1` | `#121110` | Panel body; the default component ground |
-| `--prism-surface-2` | `#1A1816` | Panel chrome: headers, indicator rails, tab strips |
+| `--prism-surface-1` | `#121110` | Panel body; the default component ground                    |
+| `--prism-surface-2` | `#1A1816` | Panel chrome: headers, indicator rails, tab strips          |
 | `--prism-surface-3` | `#221F1C` | Floating layer 1: menus, popovers, expanded indicator cards |
-| `--prism-surface-4` | `#2B2723` | Floating layer 2: tooltips, drag ghosts |
+| `--prism-surface-4` | `#2B2723` | Floating layer 2: tooltips, drag ghosts                     |
 
 ### 3.2 Lines
 
-| Token | Value | Role |
-|---|---|---|
-| `--prism-line-grid` | `#1E1C19` | Plot grid lines, axis rules inside data panels |
+| Token                 | Value     | Role                                                               |
+| --------------------- | --------- | ------------------------------------------------------------------ |
+| `--prism-line-grid`   | `#1E1C19` | Plot grid lines, axis rules inside data panels                     |
 | `--prism-line-subtle` | `#2E2A26` | Panel edges, the triad's shared 1px borders, input borders at rest |
-| `--prism-line-strong` | `#3D3833` | Hovered or active control borders, resize handles |
+| `--prism-line-strong` | `#3D3833` | Hovered or active control borders, resize handles                  |
 
 ### 3.3 Shadow and recess
 
-| Token | Value | Role |
-|---|---|---|
-| `--prism-shadow-overlay` | `0 2px 8px rgba(0, 0, 0, 0.5)` | The only shadow; floating layers only (TK-4) |
-| `--prism-shade-recessed` | `rgba(10, 9, 8, 0.55)` | Bad-band spans, out-of-domain regions, disabled plot areas |
+| Token                    | Value                          | Role                                                       |
+| ------------------------ | ------------------------------ | ---------------------------------------------------------- |
+| `--prism-shadow-overlay` | `0 2px 8px rgba(0, 0, 0, 0.5)` | The only shadow; floating layers only (TK-4)               |
+| `--prism-shade-recessed` | `rgba(10, 9, 8, 0.55)`         | Bad-band spans, out-of-domain regions, disabled plot areas |
 
 **TK-4.** Shadows apply only to elements on `--prism-z-overlay` and above. A shadow on a panel, header, rail, button, or card in the bench plane is a REJECT. Recessed regions recede by darkening; they are never hatched, colored, or outlined.
 
 ### 3.4 Ink ladder
 
-| Token | Value | Contrast on `--prism-surface-1` | Role |
-|---|---|---|---|
-| `--prism-ink-primary` | `#E9E5DF` | at least 12:1 | Values, primary labels, probe readouts |
-| `--prism-ink-secondary` | `#B3ACA2` | at least 7:1 | Secondary labels, units, axis titles |
-| `--prism-ink-muted` | `#877F74` | at least 4.5:1 | Quiet indicators at rest, placeholders, tick labels |
-| `--prism-ink-disabled` | `#57524B` | exempt | Disabled controls only; never used for information |
+| Token                   | Value     | Contrast on `--prism-surface-1` | Role                                                |
+| ----------------------- | --------- | ------------------------------- | --------------------------------------------------- |
+| `--prism-ink-primary`   | `#E9E5DF` | at least 12:1                   | Values, primary labels, probe readouts              |
+| `--prism-ink-secondary` | `#B3ACA2` | at least 7:1                    | Secondary labels, units, axis titles                |
+| `--prism-ink-muted`     | `#877F74` | at least 4.5:1                  | Quiet indicators at rest, placeholders, tick labels |
+| `--prism-ink-disabled`  | `#57524B` | exempt                          | Disabled controls only; never used for information  |
 
 ### 3.5 Accent
 
-| Token | Value | Role |
-|---|---|---|
-| `--prism-accent` | `#5EA7D8` | Focus rings, selected controls, active tab underline, brush strokes, wavelength cursors |
-| `--prism-accent-hover` | `#7DBAE2` | Hovered accent surfaces |
-| `--prism-accent-active` | `#4288B8` | Pressed state |
-| `--prism-accent-ink` | `#0A0F14` | Text and glyphs on accent-filled surfaces |
-| `--prism-accent-wash` | `rgba(94, 167, 216, 0.16)` | Selection fills, focus washes, brushed-region tint |
+| Token                   | Value                      | Role                                                                                    |
+| ----------------------- | -------------------------- | --------------------------------------------------------------------------------------- |
+| `--prism-accent`        | `#5EA7D8`                  | Focus rings, selected controls, active tab underline, brush strokes, wavelength cursors |
+| `--prism-accent-hover`  | `#7DBAE2`                  | Hovered accent surfaces                                                                 |
+| `--prism-accent-active` | `#4288B8`                  | Pressed state                                                                           |
+| `--prism-accent-ink`    | `#0A0F14`                  | Text and glyphs on accent-filled surfaces                                               |
+| `--prism-accent-wash`   | `rgba(94, 167, 216, 0.16)` | Selection fills, focus washes, brushed-region tint                                      |
 
 ### 3.6 Status
 
-| Token | Value | Role |
-|---|---|---|
+| Token                  | Value     | Role                                                                |
+| ---------------------- | --------- | ------------------------------------------------------------------- |
 | `--prism-status-error` | `#E06C5F` | Failures, refusals (grid incompatibility, coverage below threshold) |
-| `--prism-status-warn` | `#D9A03F` | Cautions (mask-intersection warnings, on-the-fly stats, low memory) |
-| `--prism-status-ok` | `#7FA65B` | Completed fits, passing conformance checks; transient only |
+| `--prism-status-warn`  | `#D9A03F` | Cautions (mask-intersection warnings, on-the-fly stats, low memory) |
+| `--prism-status-ok`    | `#7FA65B` | Completed fits, passing conformance checks; transient only          |
 
 ### 3.7 Data color
 
-| Token | Value | Role |
-|---|---|---|
-| `--prism-data-density` | `#E8DCC8` | Terminal hue of the additive-density luminance ramp (SIG-2, SIG-3); reserved, used nowhere else |
-| `--prism-data-cat-1` | `#F2C14E` | Categorical assignment 1 (gold) |
-| `--prism-data-cat-2` | `#6FD1B4` | Categorical assignment 2 (mint) |
-| `--prism-data-cat-3` | `#E88BC4` | Categorical assignment 3 (orchid) |
-| `--prism-data-cat-4` | `#A48FE8` | Categorical assignment 4 (violet) |
-| `--prism-data-cat-5` | `#E8896B` | Categorical assignment 5 (coral) |
-| `--prism-data-cat-6` | `#B5D66B` | Categorical assignment 6 (chartreuse) |
-| `--prism-data-cat-7` | `#5ECFDF` | Categorical assignment 7 (cyan) |
-| `--prism-data-cat-8` | `#C9BFA8` | Categorical assignment 8 (sand) |
-| `--prism-select-stroke` | `var(--prism-accent)` | Brush and selection geometry over data |
-| `--prism-select-casing` | `var(--prism-surface-0)` | Mandatory 1px casing under every selection stroke |
-| `--prism-select-fill` | `var(--prism-accent-wash)` | Selection region fill |
+| Token                   | Value                      | Role                                                                                            |
+| ----------------------- | -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `--prism-data-density`  | `#E8DCC8`                  | Terminal hue of the additive-density luminance ramp (SIG-2, SIG-3); reserved, used nowhere else |
+| `--prism-data-cat-1`    | `#F2C14E`                  | Categorical assignment 1 (gold)                                                                 |
+| `--prism-data-cat-2`    | `#6FD1B4`                  | Categorical assignment 2 (mint)                                                                 |
+| `--prism-data-cat-3`    | `#E88BC4`                  | Categorical assignment 3 (orchid)                                                               |
+| `--prism-data-cat-4`    | `#A48FE8`                  | Categorical assignment 4 (violet)                                                               |
+| `--prism-data-cat-5`    | `#E8896B`                  | Categorical assignment 5 (coral)                                                                |
+| `--prism-data-cat-6`    | `#B5D66B`                  | Categorical assignment 6 (chartreuse)                                                           |
+| `--prism-data-cat-7`    | `#5ECFDF`                  | Categorical assignment 7 (cyan)                                                                 |
+| `--prism-data-cat-8`    | `#C9BFA8`                  | Categorical assignment 8 (sand)                                                                 |
+| `--prism-select-stroke` | `var(--prism-accent)`      | Brush and selection geometry over data                                                          |
+| `--prism-select-casing` | `var(--prism-surface-0)`   | Mandatory 1px casing under every selection stroke                                               |
+| `--prism-select-fill`   | `var(--prism-accent-wash)` | Selection region fill                                                                           |
 
 Categorical hues are assigned in fixed order, 1 through 8, alternating high and low luminance so adjacent assignments separate by value as well as hue.
 
 ### 3.8 Type faces
 
-| Token | Value |
-|---|---|
-| `--prism-font-ui` | `"Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif` |
+| Token               | Value                                                                    |
+| ------------------- | ------------------------------------------------------------------------ |
+| `--prism-font-ui`   | `"Inter", "SF Pro Text", "Segoe UI", system-ui, sans-serif`              |
 | `--prism-font-data` | `"IBM Plex Mono", ui-monospace, "SFMono-Regular", "Consolas", monospace` |
 
 Both faces are bundled as WOFF2 in the application; no network font fetch, ever (air-gap deployment is a success criterion).
 
 ### 3.9 Type ladder
 
-| Token | px | rem | Line height | Weights | Use |
-|---|---|---|---|---|---|
-| `--prism-type-micro` | 11px | 0.6875rem | 16px | 400, 500 | Quiet indicators, rail readouts, axis ticks, unit suffixes |
-| `--prism-type-body` | 13px | 0.8125rem | 20px | 400, 500 | Default UI text, controls, menus, panel header titles |
-| `--prism-type-title` | 16px | 1rem | 24px | 500, 600 | Dialog headers, first-run section titles |
-| `--prism-type-heading` | 20px | 1.25rem | 28px | 500, 600 | First-run surface headings, empty states |
-| `--prism-type-display` | 25px | 1.5625rem | 32px | 600 | First-run hero only; never inside the triad |
+| Token                  | px   | rem       | Line height | Weights  | Use                                                        |
+| ---------------------- | ---- | --------- | ----------- | -------- | ---------------------------------------------------------- |
+| `--prism-type-micro`   | 11px | 0.6875rem | 16px        | 400, 500 | Quiet indicators, rail readouts, axis ticks, unit suffixes |
+| `--prism-type-body`    | 13px | 0.8125rem | 20px        | 400, 500 | Default UI text, controls, menus, panel header titles      |
+| `--prism-type-title`   | 16px | 1rem      | 24px        | 500, 600 | Dialog headers, first-run section titles                   |
+| `--prism-type-heading` | 20px | 1.25rem   | 28px        | 500, 600 | First-run surface headings, empty states                   |
+| `--prism-type-display` | 25px | 1.5625rem | 32px        | 600      | First-run hero only; never inside the triad                |
+
+**TK-5** (v1.1 amendment). The line heights in this ladder ship as tokens alongside their sizes: `--prism-type-micro-line` (16px), `--prism-type-body-line` (20px), `--prism-type-title-line` (24px), `--prism-type-heading-line` (28px), `--prism-type-display-line` (32px). Rationale: v1.0 committed these five values in the table while TK-1 requires every committed value to ship as a custom property and TK-2 closes the token set, leaving the two rules unsatisfiable together; design-reviewer finding, 2026-07-02.
 
 ### 3.10 Spacing
 
-| Token | Value |
-|---|---|
-| `--prism-space-half` | 4px |
-| `--prism-space-1` | 8px |
-| `--prism-space-2` | 16px |
-| `--prism-space-3` | 24px |
-| `--prism-space-4` | 32px |
-| `--prism-space-6` | 48px |
-| `--prism-space-8` | 64px |
+| Token                | Value |
+| -------------------- | ----- |
+| `--prism-space-half` | 4px   |
+| `--prism-space-1`    | 8px   |
+| `--prism-space-2`    | 16px  |
+| `--prism-space-3`    | 24px  |
+| `--prism-space-4`    | 32px  |
+| `--prism-space-6`    | 48px  |
+| `--prism-space-8`    | 64px  |
 
 ### 3.11 Radii
 
-| Token | Value | Use |
-|---|---|---|
-| `--prism-radius-0` | 0 | Panels, the triad, rails, plot frames, anything holding data |
-| `--prism-radius-1` | 2px | Buttons, inputs, badges, menu items |
-| `--prism-radius-2` | 4px | Popovers, tooltips, expanded indicator cards, first-run gallery cards |
+| Token              | Value | Use                                                                   |
+| ------------------ | ----- | --------------------------------------------------------------------- |
+| `--prism-radius-0` | 0     | Panels, the triad, rails, plot frames, anything holding data          |
+| `--prism-radius-1` | 2px   | Buttons, inputs, badges, menu items                                   |
+| `--prism-radius-2` | 4px   | Popovers, tooltips, expanded indicator cards, first-run gallery cards |
 
 4px is the maximum radius in the product. Pill shapes and circles (other than point marks in data) are a REJECT. Data-bearing frames are always square: the instrument does not round its aperture.
 
 ### 3.12 Z-layers
 
-| Token | Value | Layer |
-|---|---|---|
-| `--prism-z-base` | 0 | Panels and data canvases |
-| `--prism-z-indicator` | 20 | Quiet-indicator rails overlaying data panels |
-| `--prism-z-sticky` | 100 | Panel headers, pinned toolbars |
-| `--prism-z-overlay` | 200 | Menus, popovers, expanded indicator cards |
-| `--prism-z-modal` | 300 | Modal dialogs and their scrim |
-| `--prism-z-toast` | 400 | Transient notices |
-| `--prism-z-tooltip` | 500 | Tooltips; nothing renders above a tooltip |
+| Token                 | Value | Layer                                        |
+| --------------------- | ----- | -------------------------------------------- |
+| `--prism-z-base`      | 0     | Panels and data canvases                     |
+| `--prism-z-indicator` | 20    | Quiet-indicator rails overlaying data panels |
+| `--prism-z-sticky`    | 100   | Panel headers, pinned toolbars               |
+| `--prism-z-overlay`   | 200   | Menus, popovers, expanded indicator cards    |
+| `--prism-z-modal`     | 300   | Modal dialogs and their scrim                |
+| `--prism-z-toast`     | 400   | Transient notices                            |
+| `--prism-z-tooltip`   | 500   | Tooltips; nothing renders above a tooltip    |
 
 Any `z-index` that is not one of these seven tokens is a REJECT. No component wins a stacking fight by incrementing; it uses the layer it belongs to.
 
 ### 3.13 Motion tokens
 
-| Token | Value | Use |
-|---|---|---|
-| `--prism-motion-fill` | 120ms | Derived-tile fill reveal, opacity only, linear |
-| `--prism-motion-brush` | 80ms | Selection-mask highlight fade on brush commit and clear, linear |
+| Token                  | Value | Use                                                             |
+| ---------------------- | ----- | --------------------------------------------------------------- |
+| `--prism-motion-fill`  | 120ms | Derived-tile fill reveal, opacity only, linear                  |
+| `--prism-motion-brush` | 80ms  | Selection-mask highlight fade on brush commit and clear, linear |
 
 These are the only durations in the product. No easing tokens exist because no easing curves exist (MO-4).
 
@@ -222,14 +224,14 @@ These are the only durations in the product. No easing tokens exist because no e
 
 **QI-6.** Every value field reserves a fixed width in `ch` units sized to its longest legal rendering (table below). Values update in place; a width-changing readout is a REJECT (SP-UX-004).
 
-| Indicator | Label | Rail | Collapsed format (exemplar) | Reserved width |
-|---|---|---|---|---|
-| Sample fraction | `sample` | Feature-space panel | Two significant figures: `sample 4.2%`, `sample 100%` | 6 ch |
-| Ramp domain | `ramp` | Spatial panel | Endpoints at 4 significant figures: `ramp 0.031:0.874` | 14 ch |
-| Overview level | `level` | Spatial panel | Decimation ratio, `1:1` is native: `level 1:16` | 5 ch |
-| Capability tier | (none) | App status bar | Substrate word only: `gpu`, `cpu`, `cpu mt` | 6 ch |
-| Fill state | `fill` | Spatial panel (and feature-space during densification) | Integer percent of viewport tiles resolved: `fill 62%` | 4 ch |
-| Memory readout | `mem` | App status bar | Integer MB, used over budget: `mem 412/1024 MB` | 13 ch |
+| Indicator       | Label    | Rail                                                   | Collapsed format (exemplar)                            | Reserved width |
+| --------------- | -------- | ------------------------------------------------------ | ------------------------------------------------------ | -------------- |
+| Sample fraction | `sample` | Feature-space panel                                    | Two significant figures: `sample 4.2%`, `sample 100%`  | 6 ch           |
+| Ramp domain     | `ramp`   | Spatial panel                                          | Endpoints at 4 significant figures: `ramp 0.031:0.874` | 14 ch          |
+| Overview level  | `level`  | Spatial panel                                          | Decimation ratio, `1:1` is native: `level 1:16`        | 5 ch           |
+| Capability tier | (none)   | App status bar                                         | Substrate word only: `gpu`, `cpu`, `cpu mt`            | 6 ch           |
+| Fill state      | `fill`   | Spatial panel (and feature-space during densification) | Integer percent of viewport tiles resolved: `fill 62%` | 4 ch           |
+| Memory readout  | `mem`    | App status bar                                         | Integer MB, used over budget: `mem 412/1024 MB`        | 13 ch          |
 
 **QI-7.** Rail placement and order are fixed so position becomes muscle memory. Each panel owns one indicator rail: the full-width bottom strip, 20px tall, on `--prism-surface-2` with a 1px top edge in `--prism-line-subtle`. Indicators sit right-aligned with 8px gaps. Spatial rail order, left to right: `level`, `ramp`, `fill`. Feature-space rail: `sample`, then `fill` during densification. App status bar, rightmost first: `mem`, then tier. Reordering, duplicating an indicator in two locations, or placing a global indicator (tier, memory) anywhere but the status bar is a REJECT.
 
@@ -305,15 +307,15 @@ The spectral panel is where the taste budget is spent (SP-UX-006, SP-RP-005). It
 
 **VOC-2.** Banned-term table for primary UI, with required replacements:
 
-| Never in primary UI | Say instead |
-|---|---|
-| chunk, shard, fetch, request | "loading spectra", "reading the scene" |
-| tier, fallback, degraded, unsupported | a capability statement (VOC-3) |
-| cache, evict, pool | nothing; the memory readout is a quiet indicator |
-| texture, LUT, shader | "ramp", "display mapping" |
-| worker, thread, wasm, WebGPU | "GPU" and "CPU" are the only permitted compute words |
-| co-moment, covariance staging | "fitting", with progress |
-| a bare band index | the nm value first, band index in parentheses |
+| Never in primary UI                   | Say instead                                          |
+| ------------------------------------- | ---------------------------------------------------- |
+| chunk, shard, fetch, request          | "loading spectra", "reading the scene"               |
+| tier, fallback, degraded, unsupported | a capability statement (VOC-3)                       |
+| cache, evict, pool                    | nothing; the memory readout is a quiet indicator     |
+| texture, LUT, shader                  | "ramp", "display mapping"                            |
+| worker, thread, wasm, WebGPU          | "GPU" and "CPU" are the only permitted compute words |
+| co-moment, covariance staging         | "fitting", with progress                             |
+| a bare band index                     | the nm value first, band index in parentheses        |
 
 **VOC-3.** Capability copy follows one pattern: what the instrument is doing, colon, what that means for the user. Present tense, no apology, no blame. Canonical examples, reused verbatim where they fit: "Computing on CPU: larger fits take longer." "Computing statistics as you explore." "Rendering at overview level 2: zoom in for full detail."
 
@@ -384,4 +386,3 @@ Four ancestors, studied and never copied. Shipping a rejected pattern is a REJEC
 **AM-3.** Amendments that change architecture-adjacent commitments (the render plane's treatment of density accumulation, the ramp catalog's interaction with derived tiles, anything touching an accepted ADR) are proposed as ADR amendments or superseding ADRs per the review-loop protocol, and this brief cites the ADR rather than restating it.
 
 **AM-4.** The design-reviewer enforces whatever the current version says, in full, from the moment it lands. Verdicts cite rule IDs; the checklist in Section 12 is the reviewer's script, and drift between the checklist and the rules it cites is itself a gap under AM-1.
-

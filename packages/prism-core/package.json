@@ -16,5 +16,8 @@
   },
   "devDependencies": {
     "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "zarrita": "^0.7.3"
   }
 }

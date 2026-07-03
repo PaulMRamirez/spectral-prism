@@ -1,0 +1,7 @@
+{
+  "attributes": {
+    "title": "SP-DP-001 sharded v3 conformance fixture"
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

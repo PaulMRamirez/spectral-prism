@@ -1,0 +1,15 @@
+{
+  "attributes": {
+    "spectral_prism:binding": {
+      "version": 1,
+      "spectral": {
+        "path": "cube"
+      },
+      "stats": {
+        "path": "stats"
+      }
+    }
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

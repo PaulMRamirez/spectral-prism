@@ -55,6 +55,7 @@ Mirror bucket: blocked on two prerequisites, deliberately unchecked. It carries 
 - sprism CLI stub returns exit 1 by design until CLI v0 lands.
 - AuthorizedHttpStorage (stores/icechunk.ts) mirrors icechunk-js HttpStorage semantics because upstream only takes static headers; propose a fetch-injection option upstream (Q5 contribution posture), then delete the mirror.
 - SP-DP-010 must include a hostile-virtual-ref fixture: a repo whose virtual chunk location points at a foreign host, asserting an origin-scoped hook attaches nothing there (sharp edge documented on RequestAuthorizer, security review 2026-07-03).
+- Multiscales levels[].path (conventions/geozarr.ts) is attacker-controlled and inert today; when a Phase 1 REQ opens pyramid levels to render tiles, route those paths through safeSubpath before any fetch (same trust boundary as the binding paths; security review 2026-07-03).
 
 ## Decisions Journal
 

@@ -350,6 +350,87 @@ def write_dual_layout_variant(name: str, *, spectral: bool, spatial: bool) -> di
     return expected
 
 
+def write_stats_sidecar() -> None:
+    """A store with a ZEP0005-shaped per-chunk stats sidecar (SP-DP-006).
+
+    The sidecar is a group of per-chunk scalar arrays (min/max/sum/count) whose
+    shape equals the data array's chunk grid; the binding's stats pointer names
+    it. The browser reader consuming the sidecar must match the on-the-fly
+    computation over the same cube exactly.
+    """
+    from zarr.codecs import BytesCodec, GzipCodec
+
+    codec = dict(serializer=BytesCodec(endian="little"), compressors=GzipCodec(level=5))
+    name = "stats-sidecar"
+    root_path = FIXTURES / name
+
+    # 4 x 16 x 16 cube, 2 x 8 x 8 chunks -> a 2 x 2 x 2 chunk grid (8 chunks).
+    shape = (4, 16, 16)
+    chunks = (2, 8, 8)
+    cube = reflectance_ramp(*shape)
+    grid = tuple(int(np.ceil(s / c)) for s, c in zip(shape, chunks))
+
+    group = zarr.open_group(str(root_path), mode="w", zarr_format=3)
+    group.attrs.update(
+        {"spectral_prism:binding": {"version": 1, "spectral": {"path": "cube"}, "stats": {"path": "stats"}}}
+    )
+    arr = group.create_array(
+        "cube", shape=shape, chunks=chunks, dtype="int16", fill_value=-9999, **codec
+    )
+    arr[:] = cube
+
+    # Reduce the cube to per-chunk stats over the chunk grid (C-order flat).
+    mins = np.empty(grid, dtype=np.float64)
+    maxs = np.empty(grid, dtype=np.float64)
+    sums = np.empty(grid, dtype=np.float64)
+    counts = np.empty(grid, dtype=np.float64)
+    for bi in range(grid[0]):
+        for yi in range(grid[1]):
+            for xi in range(grid[2]):
+                block = cube[
+                    bi * chunks[0] : (bi + 1) * chunks[0],
+                    yi * chunks[1] : (yi + 1) * chunks[1],
+                    xi * chunks[2] : (xi + 1) * chunks[2],
+                ]
+                mins[bi, yi, xi] = block.min()
+                maxs[bi, yi, xi] = block.max()
+                sums[bi, yi, xi] = block.sum()
+                counts[bi, yi, xi] = block.size
+
+    stats_group = group.create_group("stats")
+    # spectral-prism stats dialect (ZEP0005-aligned in spirit; not a ratified
+    # convention, so versioned explicitly under the tool namespace).
+    stats_group.attrs.update(
+        {
+            "spectral_prism:stats": {"version": 1, "data_array": "cube", "grid_shape": list(grid)},
+        }
+    )
+    for stat_name, values in (("min", mins), ("max", maxs), ("sum", sums), ("count", counts)):
+        sa = stats_group.create_array(
+            stat_name, shape=grid, chunks=grid, dtype="float64", **codec
+        )
+        sa[:] = values
+
+    out = FIXTURES / "expected" / "stats-sidecar.json"
+    out.write_text(
+        json.dumps(
+            {
+                "dataPath": "cube",
+                "statsPath": "stats",
+                "shape": list(shape),
+                "chunks": list(chunks),
+                "gridShape": list(grid),
+                "min": [float(v) for v in mins.ravel(order="C")],
+                "max": [float(v) for v in maxs.ravel(order="C")],
+                "sum": [float(v) for v in sums.ravel(order="C")],
+                "count": [float(v) for v in counts.ravel(order="C")],
+                "cubeValues": [int(v) for v in cube.ravel(order="C")],
+            },
+            indent=1,
+        )
+    )
+
+
 def write_dual_layout() -> None:
     bindings = {
         "dual-layout-full": write_dual_layout_variant("dual-layout-full", spectral=True, spatial=True),
@@ -397,6 +478,7 @@ def main() -> int:
     write_v3_sharded()
     write_geozarr()
     write_dual_layout()
+    write_stats_sidecar()
     verify_roundtrip()
     print(f"fixtures written to {FIXTURES} (zarr-python {zarr.__version__})")
     return 0

@@ -1,0 +1,15 @@
+{
+  "attributes": {
+    "spectral_prism:stats": {
+      "version": 1,
+      "data_array": "cube",
+      "grid_shape": [
+        2,
+        2,
+        2
+      ]
+    }
+  },
+  "zarr_format": 3,
+  "node_type": "group"
+}

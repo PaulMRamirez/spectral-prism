@@ -25,7 +25,18 @@ export {
   type DualLayoutBinding,
   type LayoutBinding,
 } from './binding/dual-layout';
-export { scopedReadable } from './stores/scoped-readable';
+export { safeSubpath, scopedReadable } from './stores/scoped-readable';
+export {
+  STAT_NAMES,
+  chunkCouldMatch,
+  chunkGridIndex,
+  chunkGridShape,
+  computeChunkStats,
+  loadChunkStatsSidecar,
+  type ChunkStats,
+  type StatName,
+  type ThresholdQuery,
+} from './stats/chunk-stats';
 
 export { createAuthorizedFetch } from './stores/authorized-fetch';
 export {

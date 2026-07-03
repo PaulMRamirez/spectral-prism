@@ -38,6 +38,13 @@ export interface FixtureServerOptions {
    * an Earthdata-class protected endpoint for SP-DP-010 conformance.
    */
   requireAuth?: (auth: IncomingAuth) => boolean;
+  /**
+   * Reference-baseline network simulation (SPEC Section 9): one-way latency
+   * applied before every response, and a byte-rate cap on the body. Off by
+   * default so conformance suites stay fast; the perf harness sets both.
+   */
+  latencyMs?: number;
+  bandwidthBytesPerSec?: number;
 }
 
 interface ByteRange {
@@ -66,6 +73,16 @@ export async function startFixtureServer(
   options: FixtureServerOptions = {},
 ): Promise<FixtureServer> {
   const requests: LoggedRequest[] = [];
+
+  const { latencyMs = 0, bandwidthBytesPerSec } = options;
+  // Lumped network model: one-way latency plus body transfer time. Faithful
+  // enough for probe-latency measurement, which is dominated by RTT plus one
+  // spectral-chunk transfer; not a packet-level simulation.
+  const simulateNetwork = (bodyBytes: number): Promise<void> => {
+    if (latencyMs === 0 && !bandwidthBytesPerSec) return Promise.resolve();
+    const transferMs = bandwidthBytesPerSec ? (bodyBytes / bandwidthBytesPerSec) * 1000 : 0;
+    return new Promise((resolve) => setTimeout(resolve, latencyMs + transferMs));
+  };
 
   const server: Server = createServer((req, res) => {
     void (async () => {
@@ -123,8 +140,10 @@ export async function startFixtureServer(
           res.writeHead(log(416), { 'content-range': `bytes */${size}` }).end();
           return;
         }
+        const bodyBytes = range.end - range.start + 1;
         headers['content-range'] = `bytes ${range.start}-${range.end}/${size}`;
-        headers['content-length'] = String(range.end - range.start + 1);
+        headers['content-length'] = String(bodyBytes);
+        await simulateNetwork(method === 'HEAD' ? 0 : bodyBytes);
         res.writeHead(log(206), headers);
         if (method === 'HEAD') {
           res.end();
@@ -135,6 +154,7 @@ export async function startFixtureServer(
       }
 
       headers['content-length'] = String(size);
+      await simulateNetwork(method === 'HEAD' ? 0 : size);
       res.writeHead(log(200), headers);
       if (method === 'HEAD') {
         res.end();

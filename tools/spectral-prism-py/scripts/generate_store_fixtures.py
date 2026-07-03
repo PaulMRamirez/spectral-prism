@@ -367,7 +367,13 @@ def write_stats_sidecar() -> None:
     # 4 x 16 x 16 cube, 2 x 8 x 8 chunks -> a 2 x 2 x 2 chunk grid (8 chunks).
     shape = (4, 16, 16)
     chunks = (2, 8, 8)
+    nodata = -9999
     cube = reflectance_ramp(*shape)
+    # Nodata seams are first-class: one chunk is entirely fill, another is
+    # partially fill. The sidecar must mask fill exactly as the on-the-fly
+    # computeChunkStats does, or the identity test would be vacuous (SP-DP-006).
+    cube[0:2, 0:8, 0:8] = nodata  # chunk (0,0,0) entirely nodata
+    cube[2:4, 8:16, 8:16][0, 0, 0] = nodata  # one pixel of chunk (1,1,1)
     grid = tuple(int(np.ceil(s / c)) for s, c in zip(shape, chunks))
 
     group = zarr.open_group(str(root_path), mode="w", zarr_format=3)
@@ -392,10 +398,19 @@ def write_stats_sidecar() -> None:
                     yi * chunks[1] : (yi + 1) * chunks[1],
                     xi * chunks[2] : (xi + 1) * chunks[2],
                 ]
-                mins[bi, yi, xi] = block.min()
-                maxs[bi, yi, xi] = block.max()
-                sums[bi, yi, xi] = block.sum()
-                counts[bi, yi, xi] = block.size
+                valid = block[block != nodata]
+                if valid.size == 0:
+                    # All-nodata chunk: NaN min/max, zero sum/count, matching
+                    # computeChunkStats.
+                    mins[bi, yi, xi] = np.nan
+                    maxs[bi, yi, xi] = np.nan
+                    sums[bi, yi, xi] = 0.0
+                    counts[bi, yi, xi] = 0
+                else:
+                    mins[bi, yi, xi] = valid.min()
+                    maxs[bi, yi, xi] = valid.max()
+                    sums[bi, yi, xi] = valid.sum()
+                    counts[bi, yi, xi] = valid.size
 
     stats_group = group.create_group("stats")
     # spectral-prism stats dialect (ZEP0005-aligned in spirit; not a ratified
@@ -411,6 +426,11 @@ def write_stats_sidecar() -> None:
         )
         sa[:] = values
 
+    def jsonable(arr: np.ndarray) -> list:
+        # NaN (all-nodata chunks) is not valid JSON; emit null and let the
+        # reader map it back to NaN when comparing.
+        return [None if np.isnan(v) else float(v) for v in arr.ravel(order="C")]
+
     out = FIXTURES / "expected" / "stats-sidecar.json"
     out.write_text(
         json.dumps(
@@ -420,10 +440,11 @@ def write_stats_sidecar() -> None:
                 "shape": list(shape),
                 "chunks": list(chunks),
                 "gridShape": list(grid),
-                "min": [float(v) for v in mins.ravel(order="C")],
-                "max": [float(v) for v in maxs.ravel(order="C")],
-                "sum": [float(v) for v in sums.ravel(order="C")],
-                "count": [float(v) for v in counts.ravel(order="C")],
+                "nodata": nodata,
+                "min": jsonable(mins),
+                "max": jsonable(maxs),
+                "sum": jsonable(sums),
+                "count": jsonable(counts),
                 "cubeValues": [int(v) for v in cube.ravel(order="C")],
             },
             indent=1,

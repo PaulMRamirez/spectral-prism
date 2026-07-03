@@ -3,18 +3,18 @@
  * spectrum at a pixel from the spectral-major layout over real HTTP and check
  * it against the committed cube, with wavelengths as nm coordinates and the
  * bad-band mask honored. The latency half is the perf harness (pnpm perf).
+ * Fixtures and the loopback server live in prism-core (the substrate);
+ * spectral-prism (the consumer) reaches into them, never the reverse.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as zarr from 'zarrita';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { startFixtureServer, type FixtureServer } from '../testing/http-fixture-server';
-import { createZarrHttpStore } from '../stores/zarr-http';
-import { readDualLayoutBinding } from '../binding/dual-layout';
-import { scopedReadable } from '../stores/scoped-readable';
-import { extractProbeSpectrum } from './spectrum';
+import { createZarrHttpStore, readDualLayoutBinding, scopedReadable } from 'prism-core';
+import { startFixtureServer, type FixtureServer } from 'prism-core/testing';
+import { extractProbeSpectrum } from './probe';
 
-const FIXTURES = join(__dirname, '..', '..', 'fixtures', 'stores');
+const FIXTURES = join(__dirname, '..', '..', '..', 'prism-core', 'fixtures', 'stores');
 
 interface Expected {
   spectralPath: string | null;
@@ -67,7 +67,6 @@ describe('point-probe spectral extraction over HTTP', () => {
     expect(probe.wavelengthsNm.length).toBe(BANDS);
     expect(probe.values.length).toBe(BANDS);
     expect([...probe.values]).toEqual(Array.from({ length: BANDS }, (_, b) => cubeValue(b, y, x)));
-    // Wavelengths came through as nm, ascending.
     expect([...probe.wavelengthsNm]).toEqual([...axis.wavelengthsNm]);
     expect(probe.mask.every((m) => m === 1)).toBe(true);
   });
@@ -96,9 +95,6 @@ describe('point-probe spectral extraction over HTTP', () => {
     const chunkReads = server.requests
       .slice(from)
       .filter((r) => r.path.includes('/spectral/cube/c/'));
-    // The spectral layout chunks as (4, 4, 4): the pixel column lives in a
-    // single chunk on the y/x axes, so at most the band-axis chunk count is
-    // touched, never all 8 spatial chunks.
     expect(chunkReads.length).toBeGreaterThan(0);
     expect(chunkReads.length).toBeLessThanOrEqual(2);
   });
@@ -106,7 +102,6 @@ describe('point-probe spectral extraction over HTTP', () => {
   it('masks nodata and bad bands', async () => {
     const { array, axis } = await openSpectralLayout('dual-layout-full');
     if (axis === null) return;
-    // Force band 2 to be treated as nodata via the probe option.
     const probe = await extractProbeSpectrum(array, axis, 2, 2, { nodata: cubeValue(2, 2, 2) });
     expect(probe.mask[2]).toBe(0);
     expect(probe.mask[0]).toBe(1);

@@ -116,6 +116,31 @@ describe('Icechunk native repo over HTTP', () => {
   });
 });
 
+describe('Icechunk over a range-ignoring server (defensive slicing)', () => {
+  it('still reads correct values when the server ignores Range and returns 200', async () => {
+    // AuthorizedHttpStorage requests byte ranges for repository objects; a host
+    // that ignores Range and returns the whole 200 body must not corrupt the
+    // read (the store slices the body to the requested range).
+    const badServer = await startFixtureServer(FIXTURES, { ignoreRange: true });
+    try {
+      const store = await createIcechunkStore(`${badServer.url}/icechunk-native`, {
+        // authorize forces the AuthorizedHttpStorage path rather than upstream
+        // HttpStorage, so the fix under test is exercised.
+        authorize: (req) => req,
+      });
+      const group = await zarr.open(store.readable, { kind: 'group' });
+      const cube = await zarr.open(group.resolve('cube'), { kind: 'array' });
+      const region = await zarr.get(cube);
+      expect([...region.data]).toEqual(nativeExpected.refs['branch:main']?.values);
+
+      const wide = await zarr.open(group.resolve('wide'), { kind: 'array' });
+      expect([...(await zarr.get(wide)).data]).toEqual(nativeExpected.wide.values);
+    } finally {
+      await badServer.close();
+    }
+  });
+});
+
 describe('Icechunk virtual chunks over HTTP', () => {
   it('resolves virtual references through the URL-rewriting hook, with ranged reads', async () => {
     const from = server.requests.length;

@@ -114,28 +114,41 @@ function readCrs(attrs: Attrs): CrsInfo | null {
   const epsg = firstAttr(attrs, VOCABULARY.crsEpsgNumeric);
   const wkt2 = firstAttr(attrs, VOCABULARY.crsWkt2);
   const projjson = firstAttr(attrs, VOCABULARY.crsProjjson);
-  const first = code ?? epsg ?? wkt2 ?? projjson;
-  if (!first) return null;
 
-  const info: CrsInfo = { source: first.key };
-  if (typeof code?.value === 'string') info.code = code.value;
-  else if (typeof epsg?.value === 'number') info.code = `EPSG:${epsg.value}`;
-  if (typeof wkt2?.value === 'string') info.wkt2 = wkt2.value;
-  if (projjson?.value !== undefined) info.projjson = projjson.value;
+  const info: CrsInfo = { source: (code ?? epsg ?? wkt2 ?? projjson)?.key ?? '' };
+  // Each form is accepted only in its declared type; a wrong-typed attribute
+  // (a numeric proj:code, a string proj:epsg) is not a usable CRS and must
+  // fall through to the degradation flag, never a hollow CrsInfo (invariant 3).
+  if (typeof code?.value === 'string' && /^[^:]+:[^:]+$/.test(code.value)) info.code = code.value;
+  else if (typeof epsg?.value === 'number' && Number.isInteger(epsg.value)) {
+    info.code = `EPSG:${epsg.value}`;
+  }
+  if (typeof wkt2?.value === 'string' && wkt2.value.length > 0) info.wkt2 = wkt2.value;
+  if (projjson?.value !== null && typeof projjson?.value === 'object') {
+    info.projjson = projjson.value;
+  }
+
+  if (info.code === undefined && info.wkt2 === undefined && info.projjson === undefined) {
+    return null;
+  }
   return info;
 }
 
 function readTransform(attrs: Attrs): AffineTransform | null {
   const found = firstAttr(attrs, VOCABULARY.transform);
   if (!found || !Array.isArray(found.value)) return null;
-  const raw = found.value.map(Number);
+  // Every element must be a finite number: coercing null/true/'' to 0/1 would
+  // silently fabricate a georeference (invariant 3), and Number('Infinity')
+  // would slip past a NaN-only guard.
+  if (!found.value.every((v) => typeof v === 'number' && Number.isFinite(v))) return null;
+  const raw = found.value as number[];
   // Accept a 6-element affine, or a 9-element row-major homogeneous matrix
   // only when its last row is the identity [0, 0, 1].
   if (raw.length === 9) {
     if (raw[6] !== 0 || raw[7] !== 0 || raw[8] !== 1) return null;
     raw.length = 6;
   }
-  if (raw.length !== 6 || raw.some(Number.isNaN)) return null;
+  if (raw.length !== 6) return null;
   return {
     coefficients: raw as AffineTransform['coefficients'],
     source: found.key,

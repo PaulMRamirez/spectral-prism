@@ -119,7 +119,19 @@ class AuthorizedHttpStorage implements IcechunkStorage {
         `HTTP ${response.status} ${response.statusText} for ${url}`,
       );
     }
-    return new Uint8Array(await response.arrayBuffer());
+    const body = new Uint8Array(await response.arrayBuffer());
+    // A server that ignores Range and returns 200 with the whole object would
+    // otherwise hand back the full body as if it were the requested slice,
+    // corrupting virtual-chunk reads (offset+length into a blob). Slice it here.
+    if (range && response.status === 200) {
+      if (body.length < range.end) {
+        throw new this.#errors.StorageError(
+          `range ${range.start}-${range.end} exceeds ${body.length}-byte full body for ${url}`,
+        );
+      }
+      return body.subarray(range.start, range.end);
+    }
+    return body;
   }
 
   async exists(path: string, options?: IcechunkRequestOptions): Promise<boolean> {

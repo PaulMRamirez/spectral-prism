@@ -11,7 +11,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startFixtureServer, type FixtureServer } from '../testing/http-fixture-server';
 import { createZarrHttpStore } from '../stores/zarr-http';
 import { readDualLayoutBinding } from '../binding/dual-layout';
-import { computeChunkStats, loadChunkStatsSidecar, type StatName } from './chunk-stats';
+import {
+  chunkCouldMatch,
+  computeChunkStats,
+  loadChunkStatsSidecar,
+  type StatName,
+} from './chunk-stats';
 
 const FIXTURES = join(__dirname, '..', '..', 'fixtures', 'stores');
 
@@ -21,8 +26,9 @@ interface Expected {
   shape: number[];
   chunks: number[];
   gridShape: number[];
-  min: number[];
-  max: number[];
+  nodata: number;
+  min: (number | null)[];
+  max: (number | null)[];
   sum: number[];
   count: number[];
   cubeValues: number[];
@@ -31,6 +37,11 @@ interface Expected {
 const expected: Expected = JSON.parse(
   readFileSync(join(FIXTURES, 'expected', 'stats-sidecar.json'), 'utf8'),
 );
+
+/** Expected JSON encodes NaN (all-nodata chunks) as null; map it back. */
+function nanFromNull(values: (number | null)[]): number[] {
+  return values.map((v) => (v === null ? NaN : v));
+}
 
 let server: FixtureServer;
 
@@ -55,23 +66,36 @@ describe('per-chunk stats sidecar over HTTP', () => {
     );
     expect(stats?.provenance).toBe('sidecar');
     expect(stats?.available.sort()).toEqual(['count', 'max', 'min', 'sum']);
+    expect([...(stats?.arrays.min ?? [])]).toEqual(nanFromNull(expected.min));
+    expect([...(stats?.arrays.max ?? [])]).toEqual(nanFromNull(expected.max));
+    expect([...(stats?.arrays.sum ?? [])]).toEqual(expected.sum);
+    expect([...(stats?.arrays.count ?? [])]).toEqual(expected.count);
+  });
+
+  it('the on-the-fly fallback matches the sidecar exactly, including nodata seams (SP-DP-006)', async () => {
+    // The fixture has an all-nodata chunk and a partially-nodata chunk, so this
+    // identity is non-vacuous: fill masking, NaN min/max, and zero counts must
+    // agree between the committed sidecar and the on-the-fly computation.
+    const store = createZarrHttpStore(`${server.url}/stats-sidecar`);
+    const binding = await readDualLayoutBinding(store.readable);
+    const sidecar = await loadChunkStatsSidecar(
+      store.readable,
+      binding?.statsPath as string,
+      expected.gridShape,
+    );
+    const computed = computeChunkStats(expected.cubeValues, expected.shape, expected.chunks, {
+      nodata: expected.nodata,
+    });
+    expect(computed.gridShape).toEqual(expected.gridShape);
+    // The fixture actually exercises nodata (an all-fill chunk exists).
+    expect([...(computed.arrays.count ?? [])].some((c) => c === 0)).toBe(true);
+    expect([...(computed.arrays.min ?? [])].some((m) => Number.isNaN(m))).toBe(true);
     for (const name of ['min', 'max', 'sum', 'count'] as StatName[]) {
-      expect([...(stats?.arrays[name] ?? [])], name).toEqual(expected[name]);
+      expect([...(sidecar?.arrays[name] ?? [])], name).toEqual([...(computed.arrays[name] ?? [])]);
     }
   });
 
-  it('the on-the-fly fallback matches the sidecar exactly (sidecar is a pure accelerator)', async () => {
-    const computed = computeChunkStats(expected.cubeValues, expected.shape, expected.chunks, {
-      nodata: -9999,
-    });
-    expect([...(computed.arrays.min ?? [])]).toEqual(expected.min);
-    expect([...(computed.arrays.max ?? [])]).toEqual(expected.max);
-    expect([...(computed.arrays.sum ?? [])]).toEqual(expected.sum);
-    expect([...(computed.arrays.count ?? [])]).toEqual(expected.count);
-    expect(computed.gridShape).toEqual(expected.gridShape);
-  });
-
-  it('honors the sidecar skip index against a decoded scan', async () => {
+  it('honors the sidecar skip index via chunkCouldMatch', async () => {
     const store = createZarrHttpStore(`${server.url}/stats-sidecar`);
     const binding = await readDualLayoutBinding(store.readable);
     const stats = await loadChunkStatsSidecar(
@@ -82,12 +106,17 @@ describe('per-chunk stats sidecar over HTTP', () => {
     expect(stats).not.toBeNull();
     if (stats === null) return;
 
-    // Threshold above the global max: every chunk is skippable.
-    const globalMax = Math.max(...expected.max);
-    const skippable = expected.max.every(
-      (_, i) => !stats.arrays.max || (stats.arrays.max[i] as number) < globalMax + 1,
-    );
-    expect(skippable).toBe(true);
+    const finiteMaxes = [...(stats.arrays.max ?? [])].filter((m) => Number.isFinite(m));
+    const globalFiniteMax = Math.max(...finiteMaxes);
+
+    // A threshold just above the global finite max: every chunk with a finite
+    // max is provably skippable; an all-nodata chunk (NaN max) is conservatively
+    // kept (never false-skipped).
+    for (let i = 0; i < stats.gridShape.reduce((a, b) => a * b, 1); i++) {
+      const max = stats.arrays.max?.[i] as number;
+      const couldMatch = chunkCouldMatch(stats, i, { atLeast: globalFiniteMax + 1 });
+      expect(couldMatch, `chunk ${i} max=${max}`).toBe(!Number.isFinite(max));
+    }
   });
 
   it('returns null when the store has no stats sidecar, so the caller computes and warns', async () => {

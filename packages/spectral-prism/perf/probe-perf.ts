@@ -6,24 +6,25 @@
  * with no URL it serves the local .perf-fixtures store, which is a proxy, not
  * the gate measurement (the gate requires the mirror on reference hardware).
  *
- *   pnpm perf                       # local proxy, simulated reference network
+ *   pnpm perf                              # local proxy, simulated reference net
  *   PERF_STORE_URL=https://... pnpm perf   # against the demo mirror (no sim)
  *
- * Reports p50/p95 and PASS/FAIL against the 200 ms / 5 s targets. Exits
- * nonzero only when a real (mirror) run misses a target; the local proxy run
- * always exits 0 and prints a caveat, since it cannot stand in for the gate.
+ * Lives in spectral-prism (the consumer): the probe is a Stage-2-reserved model
+ * that stays with its consumer per ADR-0006, so its harness does too.
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import * as zarr from 'zarrita';
-import { startFixtureServer, type FixtureServer } from '../src/testing/http-fixture-server';
-import { createZarrHttpStore } from '../src/stores/zarr-http';
-import { readDualLayoutBinding } from '../src/binding/dual-layout';
-import { scopedReadable } from '../src/stores/scoped-readable';
-import { readGeoZarr } from '../src/conventions/geozarr';
-import { extractProbeSpectrum } from '../src/probe/spectrum';
+import {
+  createZarrHttpStore,
+  readDualLayoutBinding,
+  scopedReadable,
+  readGeoZarr,
+} from 'prism-core';
+import { startFixtureServer, type FixtureServer } from 'prism-core/testing';
+import { extractProbeSpectrum } from '../src/data/probe';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PERF_FIXTURES = join(HERE, '..', '.perf-fixtures');
@@ -52,10 +53,9 @@ async function coldOpenComposite(storeUrl: string, compositeBands: number): Prom
   const binding = await readDualLayoutBinding(store.readable);
   if (!binding?.spatial) throw new Error('perf store has no spatial layout');
   const layout = scopedReadable(store.readable, binding.spatial.path);
-  await readGeoZarr(layout); // conventions resolved as part of open
+  await readGeoZarr(layout);
   const group = await zarr.open(layout, { kind: 'group' });
   const level0 = await zarr.open(group.resolve('0'), { kind: 'array' });
-  // First composite: a coarse spatial tile of up to ~8 raw bands (ADR-0004).
   const tile = Math.min(256, level0.shape[1] as number);
   const bands = Math.min(compositeBands, level0.shape[0] as number);
   await zarr.get(level0, [zarr.slice(0, bands), zarr.slice(0, tile), zarr.slice(0, tile)]);
@@ -76,7 +76,6 @@ async function probeLatencies(storeUrl: string, samples: number): Promise<number
 
   const latencies: number[] = [];
   for (let i = 0; i < samples; i++) {
-    // Spread probes across the scene so different spectral chunks are hit.
     const y = Math.floor((i / samples) * height);
     const x = (i * 137) % width;
     const t0 = performance.now();
@@ -94,7 +93,6 @@ async function main(): Promise<number> {
 
   if (mirrorUrl) {
     storeUrl = mirrorUrl.replace(/\/$/, '');
-    // Mirror geometry is not known locally; assume AVIRIS-class defaults.
     meta = { bands: 224, height: 512, width: 512, compositeBands: 8 };
     console.log(`[perf] measuring against mirror: ${storeUrl} (no network simulation)`);
   } else {
@@ -112,9 +110,7 @@ async function main(): Promise<number> {
 
   try {
     const coldOpen = await coldOpenComposite(storeUrl, meta.compositeBands);
-    // Warm-cache probe latencies (the probe path after cold open).
     const probes = (await probeLatencies(storeUrl, 20)).sort((a, b) => a - b);
-
     const probeP50 = percentile(probes, 50);
     const probeP95 = percentile(probes, 95);
     const result = {

@@ -2,10 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { createAuthorizedFetch } from './authorized-fetch';
 
 function captureFetch() {
-  const calls: { url: string; headers: Headers; init: RequestInit | undefined }[] = [];
+  const calls: {
+    url: string;
+    headers: Headers;
+    init: RequestInit | undefined;
+    request: Request | undefined;
+  }[] = [];
   const stub: typeof fetch = (input, init) => {
+    const request = input instanceof Request ? input : undefined;
     const url = input instanceof Request ? input.url : String(input);
-    calls.push({ url, headers: new Headers(init?.headers), init });
+    const headers = new Headers(init?.headers ?? request?.headers);
+    calls.push({ url, headers, init, request });
     return Promise.resolve(new Response('ok'));
   };
   return { calls, stub };
@@ -46,5 +53,25 @@ describe('createAuthorizedFetch', () => {
     const fetch = createAuthorizedFetch(async (req) => req, stub);
     await fetch('https://data.example/x', { signal: controller.signal });
     expect(calls[0]?.init?.signal).toBe(controller.signal);
+  });
+
+  it('preserves Request fields (credentials, cache) when the input is a Request', async () => {
+    const { calls, stub } = captureFetch();
+    const fetch = createAuthorizedFetch((req) => {
+      req.headers.set('authorization', 'Bearer t');
+      return req;
+    }, stub);
+    const source = new Request('https://data.example/c/0', {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: { range: 'bytes=0-9' },
+    });
+    await fetch(source);
+    const sent = calls[0]?.request;
+    expect(sent).toBeInstanceOf(Request);
+    expect(sent?.credentials).toBe('include');
+    expect(sent?.cache).toBe('no-store');
+    expect(calls[0]?.headers.get('authorization')).toBe('Bearer t');
+    expect(calls[0]?.headers.get('range')).toBe('bytes=0-9');
   });
 });

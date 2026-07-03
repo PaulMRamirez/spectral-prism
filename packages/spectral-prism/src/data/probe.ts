@@ -1,13 +1,18 @@
 /**
- * Point-probe spectral extraction (SP-DP-007). The spectral-major layout
- * (bands, y, x) is designed so one object read yields a full local spectrum
- * block (ADR-0003), which is why probe-to-spectrum can hit the 200 ms target.
- * Above the chunk layer wavelength is an nm coordinate (invariant 2): the
- * probe returns wavelengths and values together, never a bare band index.
+ * Point-probe spectral extraction (SP-DP-007). Lives in the spectral-prism
+ * consumer, not prism-core: ADR-0006 reserves probe/selection models for the
+ * Stage 2 extraction (end of Phase 2), so this stays with its consumer until
+ * both consumers exhibit the shape. It uses only Stage-1 prism-core primitives
+ * (the store readable and the GeoZarr SpectralAxis).
+ *
+ * The spectral-major layout (bands, y, x) is designed so one object read
+ * yields a full local spectrum block (ADR-0003), which is why probe-to-spectrum
+ * can hit the 200 ms target. Above the chunk layer wavelength is an nm
+ * coordinate (invariant 2): the probe returns wavelengths and values together,
+ * never a bare band index.
  */
 import * as zarr from 'zarrita';
-import type { SpectralAxis } from '../conventions/geozarr';
-import type { StoreReadable } from '../stores/types';
+import type { SpectralAxis, StoreReadable } from 'prism-core';
 
 export interface ProbeSpectrum {
   /** Pixel probed, in the spectral layout's (y, x) index space. */
@@ -15,7 +20,11 @@ export interface ProbeSpectrum {
   x: number;
   /** Wavelength grid (nm), aligned with values. */
   wavelengthsNm: Float64Array;
-  /** Reflectance (or radiance) at the pixel, one per band. */
+  /**
+   * Raw stored sample at the pixel, one per band. Dtype scale/offset is applied
+   * downstream in kernels and shaders, never eagerly here (invariant 10,
+   * SP-DP-009); on an int16 store these are DNs until that step.
+   */
   values: Float64Array;
   /** 1 = usable band, 0 = bad band, aligned with values; all 1 when unknown. */
   mask: Uint8Array;

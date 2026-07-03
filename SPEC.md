@@ -33,7 +33,7 @@ The founding contract, inherited from Raster Prism: **never let the analytical s
 1. **Not a raster visualization tool.** Single-band and few-band color-ramp analysis remains Raster Prism's domain. Concepts flow between the siblings through prism-core, not through scope creep.
 2. **No server-side compute in v1.** No tiler, no compute API, no backend database. A future optional acceleration service (for example precomputing multiscales or stats) must never be required for core function.
 3. **No atmospheric correction.** Spectral Prism consumes reflectance (or radiance, displayed as-is). L1B-to-L2 processing chains (ISOFIT-class) are upstream science pipelines, not browser work.
-4. **No cross-store workflows in v1.** The unit of analysis is the *logical cube*: one store, however it was assembled upstream (a VirtualiZarr/Icechunk concatenation of multiple flightline granules into one datacube is one logical cube and fully in scope; nodata seams between flightlines follow the standard nodata semantics). Two-store comparison and change detection remain out, consistent with the Raster Prism review scoping; fit/apply separability keeps the door open architecturally. Cross-line campaign mosaicking and instrument-health trending across acquisitions are likewise out (F43): P5's supported journey is sequential per-line QA, and trending belongs to ops tooling.
+4. **No cross-store workflows in v1.** The unit of analysis is the _logical cube_: one store, however it was assembled upstream (a VirtualiZarr/Icechunk concatenation of multiple flightline granules into one datacube is one logical cube and fully in scope; nodata seams between flightlines follow the standard nodata semantics). Two-store comparison and change detection remain out, consistent with the Raster Prism review scoping; fit/apply separability keeps the door open architecturally. Cross-line campaign mosaicking and instrument-health trending across acquisitions are likewise out (F43): P5's supported journey is sequential per-line QA, and trending belongs to ops tooling.
 5. **No training of ML models.** Supervised click-to-label classification is a P2 future consideration; foundation-model embeddings (AEF-class) are competitive-watch items, not build targets.
 
 ## 5. Primary Object Inversion: Design Principles
@@ -62,16 +62,16 @@ Three coordinated projections of one cube, replacing Raster Prism's three render
 
 Carried over from the Raster Prism review taxonomy, re-prioritized for spectral-native work:
 
-| Family | Members (v1 in bold) | Fit phase | Notes |
-|---|---|---|---|
-| Decomposition | **PCA**, **MNF**, ICA, NMF | Yes | Streaming covariance; MNF adds shift-difference noise estimation with method surfaced in UI |
-| Reference matching | **SAM**, SID, adaptive matched filter | No | Reference spectrum from probe, library, or upload; wavelength resampling explicit |
-| Anomaly detection | **RX detector**, CEM | Yes (covariance inverse) | Inverse-stability handled distinctly from basis stability |
-| Fixed transforms | Band math, **band indices** (NDVI-class generalized to nm-space), continuum removal | No | nm-space expressions, not index expressions |
-| QA masks | **Saturation, dropout, cloud threshold masks** | No | P5 journey; stats-sidecar accelerated (chunk skip on max/histogram envelopes) |
-| Unmixing | Linear unmixing vs. library endmembers | Endmember selection | P1 |
-| Clustering | k-means in reduced space | Yes | P2; Jenks-fragility findings from Raster Prism apply |
-| Supervised | Click-to-label classifier | Yes | P2; probe architecture is the substrate |
+| Family             | Members (v1 in bold)                                                                | Fit phase                | Notes                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------- |
+| Decomposition      | **PCA**, **MNF**, ICA, NMF                                                          | Yes                      | Streaming covariance; MNF adds shift-difference noise estimation with method surfaced in UI |
+| Reference matching | **SAM**, SID, adaptive matched filter                                               | No                       | Reference spectrum from probe, library, or upload; wavelength resampling explicit           |
+| Anomaly detection  | **RX detector**, CEM                                                                | Yes (covariance inverse) | Inverse-stability handled distinctly from basis stability                                   |
+| Fixed transforms   | Band math, **band indices** (NDVI-class generalized to nm-space), continuum removal | No                       | nm-space expressions, not index expressions                                                 |
+| QA masks           | **Saturation, dropout, cloud threshold masks**                                      | No                       | P5 journey; stats-sidecar accelerated (chunk skip on max/histogram envelopes)               |
+| Unmixing           | Linear unmixing vs. library endmembers                                              | Endmember selection      | P1                                                                                          |
+| Clustering         | k-means in reduced space                                                            | Yes                      | P2; Jenks-fragility findings from Raster Prism apply                                        |
+| Supervised         | Click-to-label classifier                                                           | Yes                      | P2; probe architecture is the substrate                                                     |
 
 **Compatibility rules (normative).** A basis or reference carries the wavelength grid and band mask it was created under (`.spb`). Apply requires grid compatibility: exact match, or FWHM-based resampling with explicit user confirmation. Mask mismatch resolves by intersection with a visible warning recorded in provenance, and apply refuses when the intersection falls below a coverage threshold. Library matching always resamples the library spectrum to the sensor's bands (Gaussian convolution by sensor FWHM), never the image to the library.
 
@@ -106,7 +106,7 @@ Each question carries a close-by gate. **Disposition rule:** a question still op
 - **Q2 (data; close by Phase 1 gate):** Which sensor wavelength/FWHM registries ship built-in (AVIRIS-C, AVIRIS-NG, AVIRIS-3, EMIT, EnMAP, PRISMA, Headwall-class lab sensors?) and how are user-defined sensors registered, including lab-frame definitions (wavelength+FWHM CSV, no CRS) as first-class per the user-journey review (F40). The registry pairs with the wavelength-resampling contract (Gaussian convolution by FWHM) in prism-core, required for cross-sensor library matching in v1.
 - **Q3 (design; resolved):** Resolved by ADR-0004 as amended: continuum removal is an apply-phase compute transform emitting derived tiles, like every other spectral operation; the per-probe CPU path remains for the spectral panel.
 - **Q4 (governance; close by Phase 1 gate):** License Apache 2.0 (default per project preference); confirm USGS spectral library redistribution terms for bundling vs. fetch-on-demand.
-- **Q5 (engineering; close by Phase 0 gate):** icechunk-js maturity risk. It is a young community reader (EarthyScience, MIT). Vendoring/contribution posture, and the fallback (plain Zarr over HTTP) must remain first-class (SP-DP-003).
+- **Q5 (engineering; resolved 2026-07-03):** icechunk-js maturity risk, closed by the posture note docs/research/icechunk-js-posture.md (verified against upstream 2026-07): pin icechunk-js at exactly 0.6.0 as a normal dependency (not vendored), watch the official Earthmover wasm bindings as the successor path, and keep the plain-Zarr HTTP fallback first-class (SP-DP-003, met, commit 17f8943). ADR-0002 already records the decision; conformance fixtures for native and virtual chunks pass (SP-DP-002, commit df4a655). Vendoring is the contingency, entered only via the ROADMAP risk-table response ladder.
 - **Q6 (product; close by Phase 2 planning):** MCP Apps surface for Spectral Prism (tool-first queries like "top 5 SAM matches for this spectrum") in v1 or fast-follow.
 - **Q7 (product/engineering; close by Phase 2 planning):** Direct access to protected archives (Earthdata-class): is a user-supplied bearer-token flow worth supporting given EDL redirect/CORS friction, or is the CLI-mirror path canonical and documented as such?
 

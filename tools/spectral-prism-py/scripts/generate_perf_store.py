@@ -22,7 +22,7 @@ import zarr
 from zarr.codecs import BytesCodec, GzipCodec
 
 REPO = Path(__file__).resolve().parents[3]
-OUT = REPO / "packages" / "prism-core" / ".perf-fixtures" / "aviris-class"
+OUT = REPO / "packages" / "spectral-prism" / ".perf-fixtures" / "aviris-class"
 
 BANDS = 224
 HEIGHT = 512

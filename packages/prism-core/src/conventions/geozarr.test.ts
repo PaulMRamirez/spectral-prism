@@ -123,6 +123,37 @@ describe('readGeoZarr', () => {
     expect(model.degradations[0]?.detail).toContain('transform missing');
   });
 
+  it('refuses a transform with non-finite elements rather than coercing (invariant 3)', async () => {
+    for (const bad of [
+      [30, 0, null, 0, -30, 3800040],
+      [true, '', '30', [], 0, 1],
+      [30, 0, 'Infinity', 0, -30, 0],
+    ]) {
+      const { map, root } = await makeGroup({
+        'proj:code': 'EPSG:32611',
+        'spatial:transform': bad,
+      });
+      await addArray(root, 'wavelengths', [450], { units: 'nm' });
+      const model = await readGeoZarr(asReadable(map));
+      expect(model.transform, JSON.stringify(bad)).toBeNull();
+      expect(model.degradations.map((d) => d.row)).toContain('missing-georeferencing');
+    }
+  });
+
+  it('refuses a wrong-typed CRS attribute rather than returning a hollow CrsInfo (invariant 3)', async () => {
+    for (const attrs of [
+      { 'proj:code': 32611 }, // number, not authority:code string
+      { 'proj:epsg': '32611' }, // string, not a number
+      { 'proj:code': 'no-colon' }, // not authority:code shaped
+    ]) {
+      const { map, root } = await makeGroup(attrs);
+      await addArray(root, 'wavelengths', [450], { units: 'nm' });
+      const model = await readGeoZarr(asReadable(map));
+      expect(model.crs, JSON.stringify(attrs)).toBeNull();
+      expect(model.degradations.map((d) => d.row)).toContain('missing-georeferencing');
+    }
+  });
+
   it('flags missing georeferencing as the matrix row, with detail', async () => {
     const { map, root } = await makeGroup({});
     await addArray(root, 'wavelengths', [450], { units: 'nm' });

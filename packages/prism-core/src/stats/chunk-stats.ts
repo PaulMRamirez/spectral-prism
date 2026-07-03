@@ -92,6 +92,23 @@ export async function loadChunkStatsSidecar(
     return null;
   }
 
+  // Honor the sidecar's own declaration: reject a dialect version this reader
+  // does not speak, and a grid_shape that does not match the data array's
+  // chunk grid axis-for-axis (a transpose has the same element count but would
+  // misalign the skip index, causing false skips that silently drop data).
+  const declared = (statsGroup.attrs as Record<string, unknown>)['spectral_prism:stats'];
+  if (typeof declared === 'object' && declared !== null) {
+    const record = declared as Record<string, unknown>;
+    if (typeof record['version'] === 'number' && record['version'] !== STATS_VERSION) return null;
+    const declaredGrid = record['grid_shape'];
+    if (
+      Array.isArray(declaredGrid) &&
+      (declaredGrid.length !== gridShape.length || declaredGrid.some((v, i) => v !== gridShape[i]))
+    ) {
+      return null;
+    }
+  }
+
   const expected = gridShape.reduce((a, b) => a * b, 1);
   const arrays: Partial<Record<StatName, Float64Array>> = {};
   const available: StatName[] = [];

@@ -26,7 +26,6 @@ export {
   type LayoutBinding,
 } from './binding/dual-layout';
 export { safeSubpath, scopedReadable } from './stores/scoped-readable';
-export { extractProbeSpectrum, type ProbeOptions, type ProbeSpectrum } from './probe/spectrum';
 export {
   STAT_NAMES,
   chunkCouldMatch,

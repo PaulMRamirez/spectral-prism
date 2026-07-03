@@ -9,6 +9,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./testing": {
+      "types": "./src/testing/http-fixture-server.ts",
+      "default": "./src/testing/http-fixture-server.ts"
     }
   },
   "scripts": {

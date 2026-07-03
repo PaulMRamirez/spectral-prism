@@ -13,22 +13,19 @@ export function createAuthorizedFetch(
 ): typeof fetch {
   if (authorize === undefined) return baseFetch;
 
-  // Store traffic is bodiless (GET/HEAD), so method, headers, and signal are
-  // the whole request; runs once per chunk fetch, so avoid Request allocation
-  // on the string/URL path.
   return async (input, init) => {
     const isRequest = input instanceof Request;
     const authorized = await authorize({
       url: new URL(isRequest ? input.url : input),
       headers: new Headers(init?.headers ?? (isRequest ? input.headers : undefined)),
     });
-    const method = init?.method ?? (isRequest ? input.method : undefined);
-    const signal = init?.signal ?? (isRequest ? input.signal : undefined);
-    return baseFetch(authorized.url, {
-      ...init,
-      ...(method !== undefined && { method }),
-      ...(signal !== undefined && { signal }),
-      headers: authorized.headers,
-    });
+    // When the caller passed a Request, preserve all of its fields (credentials,
+    // cache, redirect, ...) by re-basing on it; only the URL and headers change.
+    // A cookie-authenticated store must not lose credentials just because an
+    // authorize hook is configured.
+    if (isRequest) {
+      return baseFetch(new Request(authorized.url, input), { headers: authorized.headers });
+    }
+    return baseFetch(authorized.url, { ...init, headers: authorized.headers });
   };
 }

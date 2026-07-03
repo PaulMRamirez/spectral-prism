@@ -20,7 +20,7 @@
     "audit:prod": "pnpm audit --prod --audit-level high",
     "e2e": "playwright test",
     "lhci": "lhci autorun",
-    "perf": "tsx packages/prism-core/perf/probe-perf.ts"
+    "perf": "tsx packages/spectral-prism/perf/probe-perf.ts"
   },
   "size-limit": [
     {

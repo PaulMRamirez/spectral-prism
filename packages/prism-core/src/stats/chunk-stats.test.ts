@@ -1,11 +1,38 @@
+import * as zarr from 'zarrita';
 import { describe, expect, it } from 'vitest';
 import {
   chunkCouldMatch,
   chunkGridIndex,
   chunkGridShape,
   computeChunkStats,
+  loadChunkStatsSidecar,
   type ChunkStats,
 } from './chunk-stats';
+import type { StoreReadable } from '../stores/types';
+
+/** Build a store whose `stats` subgroup is a sidecar over `gridShape`. */
+async function makeSidecarStore(
+  gridShape: number[],
+  statsAttrs: Record<string, unknown>,
+): Promise<StoreReadable> {
+  const map = new Map<string, Uint8Array>();
+  const root = await zarr.create(map);
+  const stats = await zarr.create(root.resolve('stats'), { attributes: statsAttrs });
+  const n = gridShape.reduce((a, b) => a * b, 1);
+  for (const name of ['min', 'max', 'sum', 'count']) {
+    const arr = await zarr.create(stats.resolve(name), {
+      shape: gridShape,
+      chunkShape: gridShape,
+      dtype: 'float64',
+    });
+    await zarr.set(arr, null, {
+      data: Float64Array.from({ length: n }, (_, i) => i),
+      shape: gridShape,
+      stride: gridShape.map((_, i) => gridShape.slice(i + 1).reduce((a, b) => a * b, 1)),
+    });
+  }
+  return { get: (key) => Promise.resolve(map.get(key)) };
+}
 
 describe('chunk grid helpers', () => {
   it('computes the chunk-grid shape with ceil division', () => {
@@ -90,5 +117,35 @@ describe('chunkCouldMatch (skip index)', () => {
       available: ['min'],
     };
     expect(chunkCouldMatch(noMax, 0, { atLeast: 50 })).toBe(true);
+  });
+});
+
+describe('loadChunkStatsSidecar dialect validation', () => {
+  const decl = (extra: Record<string, unknown>) => ({
+    'spectral_prism:stats': { version: 1, ...extra },
+  });
+
+  it('loads a sidecar whose declared grid_shape matches the caller', async () => {
+    const readable = await makeSidecarStore([2, 2], decl({ grid_shape: [2, 2] }));
+    const stats = await loadChunkStatsSidecar(readable, 'stats', [2, 2]);
+    expect(stats?.provenance).toBe('sidecar');
+    expect(stats?.available.sort()).toEqual(['count', 'max', 'min', 'sum']);
+  });
+
+  it('rejects a transposed grid_shape with the same element count (false-skip guard)', async () => {
+    // Sidecar declares [1,4]; caller expects [4,1]. Same product, different
+    // axes: loading it would misalign the skip index. Must return null.
+    const readable = await makeSidecarStore([4], decl({ grid_shape: [1, 4] }));
+    expect(await loadChunkStatsSidecar(readable, 'stats', [4, 1])).toBeNull();
+  });
+
+  it('rejects a sidecar declaring an unknown dialect version', async () => {
+    const readable = await makeSidecarStore([4], decl({ version: 999, grid_shape: [4] }));
+    expect(await loadChunkStatsSidecar(readable, 'stats', [4])).toBeNull();
+  });
+
+  it('refuses an unsafe stats path before any read', async () => {
+    const readable = await makeSidecarStore([4], decl({ grid_shape: [4] }));
+    expect(await loadChunkStatsSidecar(readable, '../escape', [4])).toBeNull();
   });
 });

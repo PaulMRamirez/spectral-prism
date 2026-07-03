@@ -45,6 +45,12 @@ export interface FixtureServerOptions {
    */
   latencyMs?: number;
   bandwidthBytesPerSec?: number;
+  /**
+   * Ignore Range requests: reply 200 with the whole object even when a Range
+   * header is sent (some misconfigured hosts do this). Exercises the store
+   * layer's defensive slicing.
+   */
+  ignoreRange?: boolean;
 }
 
 interface ByteRange {
@@ -134,7 +140,7 @@ export async function startFixtureServer(
         'content-type': 'application/octet-stream',
       };
 
-      if (rangeHeader !== null) {
+      if (rangeHeader !== null && !options.ignoreRange) {
         const range = parseRange(rangeHeader, size);
         if (range === null) {
           res.writeHead(log(416), { 'content-range': `bytes */${size}` }).end();

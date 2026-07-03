@@ -9,6 +9,12 @@ export const PRISM_CORE_STAGE = 1 as const;
 
 export { createAuthorizedFetch } from './stores/authorized-fetch';
 export {
+  createIcechunkStore,
+  type IcechunkRef,
+  type IcechunkSpectralStore,
+  type IcechunkStoreOptions,
+} from './stores/icechunk';
+export {
   createZarrHttpStore,
   type CoalesceReport,
   type ZarrHttpStore,

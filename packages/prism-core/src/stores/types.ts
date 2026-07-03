@@ -16,9 +16,11 @@ export interface StoreRequest {
  * Pluggable request-authorization hook, accepted by every store (SP-DP-010):
  * static headers, bearer tokens, or pre-signed URL rewriting. The hook may
  * return a new request or mutate and return the given one; the app never owns
- * credential logic itself. Hook authors should scope credentials by
+ * credential logic itself. Hook authors must scope credentials by
  * request.url.origin: stores are user-supplied URLs, so an unscoped token
- * would be sent to whatever host the user opens.
+ * would be sent to whatever host the user opens; worse, Icechunk virtual
+ * chunk references let a repository direct hook-carrying fetches at hosts
+ * the user never opened, and unlike redirects nothing strips headers there.
  */
 export type RequestAuthorizer = (request: StoreRequest) => StoreRequest | Promise<StoreRequest>;
 

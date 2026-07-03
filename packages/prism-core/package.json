@@ -18,6 +18,7 @@
     "typescript": "^5.6.0"
   },
   "dependencies": {
+    "icechunk-js": "0.6.0",
     "zarrita": "^0.7.3"
   }
 }

@@ -1,17 +1,33 @@
-import {
-  HttpStorage,
-  IcechunkStore,
-  NotFoundError,
-  StorageError,
-  encodeObjectId12,
-  type ByteRange,
-  type RequestOptions as IcechunkRequestOptions,
-  type Storage as IcechunkStorage,
+import type {
+  ByteRange,
+  RequestOptions as IcechunkRequestOptions,
+  Storage as IcechunkStorage,
 } from 'icechunk-js';
 import { withRangeCoalescing } from 'zarrita';
 import { createAuthorizedFetch } from './authorized-fetch';
 import type { RequestAuthorizer, SpectralStore } from './types';
 import type { CoalesceReport } from './zarr-http';
+
+/**
+ * icechunk-js loads lazily at store-open time (SP-DP-003, Q5 posture): the
+ * plain-Zarr fallback and the initial bundle never depend on it, and its
+ * absence degrades to an explicit error here, never a blank canvas. Type-only
+ * imports above are erased at compile time and keep this file out of its
+ * runtime graph.
+ */
+type IcechunkModule = typeof import('icechunk-js');
+let icechunkModule: Promise<IcechunkModule> | undefined;
+
+function loadIcechunk(): Promise<IcechunkModule> {
+  icechunkModule ??= import('icechunk-js').catch((cause: unknown) => {
+    icechunkModule = undefined;
+    throw new Error(
+      'icechunk-js failed to load, so Icechunk stores are unavailable; plain Zarr over HTTP remains fully functional (SP-DP-003)',
+      { cause },
+    );
+  });
+  return icechunkModule;
+}
 
 /** Version pin: exactly one ref form; branch main is the default. */
 export type IcechunkRef = { branch: string } | { tag: string } | { snapshot: string };
@@ -57,10 +73,16 @@ export interface IcechunkSpectralStore extends SpectralStore {
 class AuthorizedHttpStorage implements IcechunkStorage {
   readonly #baseUrl: string;
   readonly #fetch: typeof fetch;
+  readonly #errors: Pick<IcechunkModule, 'NotFoundError' | 'StorageError'>;
 
-  constructor(baseUrl: string, authorizedFetch: typeof fetch) {
+  constructor(
+    baseUrl: string,
+    authorizedFetch: typeof fetch,
+    errors: Pick<IcechunkModule, 'NotFoundError' | 'StorageError'>,
+  ) {
     this.#baseUrl = baseUrl.replace(/\/$/, '');
     this.#fetch = authorizedFetch;
+    this.#errors = errors;
   }
 
   #url(path: string): string {
@@ -86,14 +108,16 @@ class AuthorizedHttpStorage implements IcechunkStorage {
       });
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') throw error;
-      throw new StorageError(
+      throw new this.#errors.StorageError(
         `Failed to fetch ${url}: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error : undefined,
       );
     }
-    if (response.status === 404) throw new NotFoundError(path);
+    if (response.status === 404) throw new this.#errors.NotFoundError(path);
     if (response.status !== 200 && response.status !== 206) {
-      throw new StorageError(`HTTP ${response.status} ${response.statusText} for ${url}`);
+      throw new this.#errors.StorageError(
+        `HTTP ${response.status} ${response.statusText} for ${url}`,
+      );
     }
     return new Uint8Array(await response.arrayBuffer());
   }
@@ -114,7 +138,9 @@ class AuthorizedHttpStorage implements IcechunkStorage {
 
   // eslint-disable-next-line require-yield
   async *listPrefix(_prefix: string): AsyncIterable<string> {
-    throw new StorageError('Listing not supported for HTTP storage. Use S3Storage for listing.');
+    throw new this.#errors.StorageError(
+      'Listing not supported for HTTP storage. Use S3Storage for listing.',
+    );
   }
 }
 
@@ -137,14 +163,15 @@ export async function createIcechunkStore(
     signal,
   } = options;
 
+  const icechunk = await loadIcechunk();
   const authorizedFetch = createAuthorizedFetch(authorize);
   const baseUrl = String(url);
   const storage =
     authorize === undefined
-      ? new HttpStorage(baseUrl)
-      : new AuthorizedHttpStorage(baseUrl, authorizedFetch);
+      ? new icechunk.HttpStorage(baseUrl)
+      : new AuthorizedHttpStorage(baseUrl, authorizedFetch, icechunk);
 
-  const store = await IcechunkStore.open(storage, {
+  const store = await icechunk.IcechunkStore.open(storage, {
     ...ref,
     ...(coalesce !== false && {
       withRangeCoalescing: (s, opts) => withRangeCoalescing(s, { ...opts, ...coalesce }),
@@ -160,6 +187,6 @@ export async function createIcechunkStore(
     url: baseUrl,
     readable: store,
     ref,
-    snapshotId: encodeObjectId12(store.session.getSnapshotId()),
+    snapshotId: icechunk.encodeObjectId12(store.session.getSnapshotId()),
   };
 }

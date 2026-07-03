@@ -22,6 +22,24 @@ export interface FixtureServer {
   close(): Promise<void>;
 }
 
+/** What an auth gate sees about an incoming request. */
+export interface IncomingAuth {
+  path: string;
+  authorization: string | null;
+  /** All request headers, lowercased keys (for custom-header auth schemes). */
+  headers: Record<string, string>;
+  /** Parsed query parameters (for pre-signed-URL auth schemes). */
+  query: URLSearchParams;
+}
+
+export interface FixtureServerOptions {
+  /**
+   * Optional auth gate: return false to reject with 401 before serving. Models
+   * an Earthdata-class protected endpoint for SP-DP-010 conformance.
+   */
+  requireAuth?: (auth: IncomingAuth) => boolean;
+}
+
 interface ByteRange {
   start: number;
   end: number;
@@ -43,19 +61,40 @@ function parseRange(header: string, size: number): ByteRange | null {
   return { start, end };
 }
 
-export async function startFixtureServer(rootDir: string): Promise<FixtureServer> {
+export async function startFixtureServer(
+  rootDir: string,
+  options: FixtureServerOptions = {},
+): Promise<FixtureServer> {
   const requests: LoggedRequest[] = [];
 
   const server: Server = createServer((req, res) => {
     void (async () => {
       const method = req.method ?? 'GET';
-      const urlPath = decodeURIComponent(new URL(req.url ?? '/', 'http://fixture').pathname);
+      const requestUrl = new URL(req.url ?? '/', 'http://fixture');
+      const urlPath = decodeURIComponent(requestUrl.pathname);
       const rangeHeader = req.headers.range ?? null;
       const authorization = req.headers.authorization ?? null;
       const log = (status: number) => {
         requests.push({ method, path: urlPath, range: rangeHeader, authorization, status });
         return status;
       };
+
+      if (options.requireAuth) {
+        const headers: Record<string, string> = {};
+        for (const [k, v] of Object.entries(req.headers)) {
+          if (typeof v === 'string') headers[k.toLowerCase()] = v;
+        }
+        const ok = options.requireAuth({
+          path: urlPath,
+          authorization,
+          headers,
+          query: requestUrl.searchParams,
+        });
+        if (!ok) {
+          res.writeHead(log(401), { 'www-authenticate': 'Bearer realm="fixture"' }).end();
+          return;
+        }
+      }
 
       const filePath = join(rootDir, normalize(urlPath));
       if (!filePath.startsWith(rootDir + sep) && filePath !== rootDir) {

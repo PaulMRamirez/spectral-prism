@@ -1,6 +1,6 @@
 # Spectral Prism: Roadmap
 
-Phases are capability gates, not dates. Each phase ends with a demonstrable artifact and a go/no-go review of the assumptions it tested. Gates cite REQUIREMENTS.md IDs; the annex is the single ledger of what each gate proves. Gate coverage: P0 gate proves SP-DP-001..008, SP-DP-010; P1 gate proves SP-DP-011 (ENVI), SP-DP-012..014, SP-RP-001/003/005/006, SP-CO-001..004, SP-XP-002..004, SP-UX-008; P2 gate proves SP-CP-001..010, SP-RP-002, SP-DP-009; P3 gate proves SP-DP-011 (GeoTIFF/NetCDF), SP-RP-004, SP-XP-001/005/006/007.
+Phases are capability gates, not dates. Each phase ends with a demonstrable artifact and a go/no-go review of the assumptions it tested. Gates cite REQUIREMENTS.md IDs; the annex is the single ledger of what each gate proves. Gate coverage: P0 gate proves SP-DP-001..008, SP-DP-010, SP-UX-001; P1 gate proves SP-DP-011 (ENVI), SP-DP-012..014, SP-RP-001/003/005/006, SP-CO-001..004, SP-XP-002..004, SP-UX-002..005/008; P2 gate proves SP-CP-001..011, SP-CO-005, SP-RP-002, SP-DP-009, SP-UX-006/007 (SP-UX-005 continues through P3); P3 gate proves SP-DP-011 (GeoTIFF/NetCDF), SP-RP-004, SP-XP-001/005/006/007. Parked at P4+: SP-XP-008/009, SP-RP-007.
 
 ## Phase 0: Substrate (data-plane core + proof)
 

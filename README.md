@@ -15,7 +15,7 @@ Sibling project of raster-prism; shared substrate in prism-core.
 | `ARCHITECTURE.md` | Data / compute / render / coordination planes, worker topology and request mechanics, memory governor, isolation postures, degradation matrix, library selections, data-flow traces |
 | `docs/adr/0001` | Zarr v3 + GeoZarr conventions as native format |
 | `docs/adr/0002` | zarrita.js + icechunk-js access; virtualization for archival data |
-| `docs/adr/0003` | Dual chunk layout with ZEP0005-aligned statistics |
+| `docs/adr/0003` | Dual chunk layout with ZEP0005-aligned statistics (amended: sparse pyramid spacing) |
 | `docs/adr/0004` | All spectral math in the compute plane; WebGL2 renders derived tiles (amended) |
 | `docs/adr/0005` | Mosaic + DuckDB-WASM coordination and analytics layer |
 | `docs/adr/0006` | prism-core package split (two-stage extraction) |

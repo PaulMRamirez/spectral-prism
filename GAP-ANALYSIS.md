@@ -1,6 +1,6 @@
 # Spectral Prism: Competitive and Adjacent-Approach Gap Analysis
 
-**Status:** Draft v0.2, research snapshot 2026-07. Sources: vendor documentation, project repositories, and OGC/community working-group materials current as of the date above. Matrix rows rot at different rates (ArcGIS Pro and GEE capabilities move quarterly); re-verify any row older than two quarters before citing it externally.
+**Status:** v0.6 package, research snapshot 2026-07. The xpublish-tiles/Flux complement is now formalized as optional deployment posture 4 (ARCHITECTURE Section 8). Sources: vendor documentation, project repositories, and OGC/community working-group materials current as of the date above. Matrix rows rot at different rates (ArcGIS Pro and GEE capabilities move quarterly); re-verify any row older than two quarters before citing it externally.
 
 ## 1. Landscape Matrix
 

@@ -1,6 +1,6 @@
 # Spectral Prism: Requirements Traceability Annex
 
-**Status:** v0.4 baseline, 2026-07-01. SPEC.md is the narrative; this annex is the ledger. Each requirement carries a stable ID, priority, a testable acceptance criterion, its verifying test class (CLAUDE.md Testing Expectations), and the phase gate that proves it. Numbers are stated against the reference baseline defined in SPEC Section 9. IDs are never reused; withdrawn requirements are struck, not deleted.
+**Status:** v0.6 baseline, 2026-07-01 (54 requirements across six sections: SP-DP 14, SP-CP 11, SP-RP 7, SP-CO 5, SP-XP 9, SP-UX 8; additions through reviews F1-F43 and the autonomy plan). SPEC.md is the narrative; this annex is the ledger. Each requirement carries a stable ID, priority, a testable acceptance criterion, its verifying test class (CLAUDE.md Testing Expectations), and the phase gate that proves it. Numbers are stated against the reference baseline defined in SPEC Section 9. IDs are never reused; withdrawn requirements are struck, not deleted.
 
 ## Data Plane (SP-DP)
 

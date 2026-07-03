@@ -1,6 +1,6 @@
 # ADR-0006: prism-core Shared Package; spectral-prism and raster-prism as Consumers
 
-**Status:** Accepted
+**Status:** Accepted (amended v0.2: two-stage extraction)
 **Date:** 2026-07-01
 
 ## Context

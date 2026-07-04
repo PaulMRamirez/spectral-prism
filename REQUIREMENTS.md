@@ -1,6 +1,6 @@
 # Spectral Prism: Requirements Traceability Annex
 
-**Status:** v0.6 baseline, 2026-07-01 (54 requirements across six sections: SP-DP 14, SP-CP 11, SP-RP 7, SP-CO 5, SP-XP 9, SP-UX 8; additions through reviews F1-F43 and the autonomy plan). SPEC.md is the narrative; this annex is the ledger. Each requirement carries a stable ID, priority, a testable acceptance criterion, its verifying test class (CLAUDE.md Testing Expectations), and the phase gate that proves it. Numbers are stated against the reference baseline defined in SPEC Section 9. IDs are never reused; withdrawn requirements are struck, not deleted.
+**Status:** v0.7 baseline, 2026-07-04 (v0.6 amended: SP-DP-007/008 acceptance accepts a documented simulated reference baseline for the P0 gate pending the demo mirror, human-disposed per docs/autonomy/ESCALATION.md Option 2; the mirror measurement remains a ledgered obligation). Previously v0.6, 2026-07-01 (54 requirements across six sections: SP-DP 14, SP-CP 11, SP-RP 7, SP-CO 5, SP-XP 9, SP-UX 8; additions through reviews F1-F43 and the autonomy plan). SPEC.md is the narrative; this annex is the ledger. Each requirement carries a stable ID, priority, a testable acceptance criterion, its verifying test class (CLAUDE.md Testing Expectations), and the phase gate that proves it. Numbers are stated against the reference baseline defined in SPEC Section 9. IDs are never reused; withdrawn requirements are struck, not deleted.
 
 ## Data Plane (SP-DP)
 
@@ -12,8 +12,8 @@
 | SP-DP-004 | P0 | GeoZarr convention reader (proj:, spatial:, multiscales, CF wavelength/FWHM/bad-band), versioned, degrading per matrix | Degradation matrix rows exercised as tests | Store conformance | P0 |
 | SP-DP-005 | P0 | Dual-layout binding incl. per-layout CRS; degraded single-layout behavior | Binding metadata round-trips CLI -> browser; degraded warnings shown | Store conformance | P0 |
 | SP-DP-006 | P0 | ZEP0005-aligned per-chunk stats consumed; on-the-fly fallback when absent | Skip-index honored; absent-stats path computes and warns | Store conformance | P0 |
-| SP-DP-007 | P0 | Probe-to-spectrum under 200 ms on spectral-major layouts | Measured on demo mirror | Perf harness | P0 |
-| SP-DP-008 | P0 | Cold open to composite under 5 s | Measured on demo mirror | Perf harness | P0 |
+| SP-DP-007 | P0 | Probe-to-spectrum under 200 ms on spectral-major layouts | Measured on demo mirror; until the mirror exists, a documented simulated reference baseline (50 ms RTT, 50 Mbps, AVIRIS-class synthetic dual-layout store) is accepted for the P0 gate (Option 2 disposition, 2026-07-04), the mirror run remaining a ledgered follow-up | Perf harness | P0 |
+| SP-DP-008 | P0 | Cold open to composite under 5 s | Measured on demo mirror; simulated-baseline acceptance per the same 2026-07-04 disposition as SP-DP-007 | Perf harness | P0 |
 | SP-DP-009 | P0 | Dtype fidelity: scale/offset in kernels/shaders, nodata defined once and respected | Golden-scene int16 path bit-compares to float32 path within tolerance | Kernel parity | P2 |
 | SP-DP-010 | P0 | Pluggable request authorization on every store | Header/token/URL-rewrite hooks exercised against an auth fixture | Store conformance | P0 |
 | SP-DP-011 | P0 | Local file ingest via Blob.slice range reads: ENVI first (P5 opening journey step), GeoTIFF and EMIT NetCDF following | ENVI line opens cold to first composite within the 5 s target; multi-GB fixture opens without whole-file read | Store conformance + perf harness | P1 (ENVI); P3 (GeoTIFF/NetCDF) |

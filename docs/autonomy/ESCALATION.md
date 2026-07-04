@@ -4,6 +4,12 @@
 **Raised by:** the autonomous loop, at the Phase 0 gate check (AUTONOMY-PLAN Section 3 step 10, Section 7).
 **Status of the loop:** paused, awaiting disposition. Per AUTONOMY-PLAN Section 7, an escalation is loop success, not failure.
 
+## Disposition (2026-07-04, Paul Ramirez)
+
+**Blocker 1: Option 2 chosen.** SP-DP-007/008 acceptance is amended to accept the documented simulated reference baseline for the P0 gate, with the demo-mirror measurement remaining a ledgered follow-up obligation. Applied to REQUIREMENTS.md (v0.7) by the loop under this disposition; the amendment is recorded in the annex's status line and the mirror obligation in the STATE.md debt ledger.
+
+**Blocker 2: pending.** The proposed ADR-0008 amendment below still awaits a separate yes/no; the gate cannot pass without Q1 adoption.
+
 ## What fired
 
 Two Phase 0 gate criteria cannot be satisfied autonomously, because both depend on artifacts only a human can provide. Everything else the Phase 0 gate cites is done and green on `main`.

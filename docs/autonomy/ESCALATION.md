@@ -42,6 +42,16 @@ The Phase 0 gate also requires "the Q1 capability-tier table written and adopted
 
 **Option 1.** The data plane is done and independently verified; the only things between here and a passing Phase 0 gate are (a) your ADR-0008 amendment for Q1 adoption and (b) the mirror, which needs your cloud credentials. The perf code and harness are ready and give strong pre-mirror evidence (probe 132 ms, cold open 627 ms in simulation) that the targets hold, so the mirror run should be a confirmation rather than a risk. If you want the gate to pass on simulated numbers in the interim, that is Option 2 and needs an explicit REQUIREMENTS.md amendment from you.
 
+Options 1 and 3 compose: approve the amendment below (ten minutes, no infrastructure), tell the loop to build CLI v0 while you provision the bucket, and the mirror measurement closes the gate when both converge.
+
+## Proposed ADR-0008 amendment text (the loop proposes; you dispose)
+
+To reduce Blocker 2 to a yes/no, the following is ready to append to `docs/adr/0008-numerical-policy.md` under its Status line, verbatim or edited to taste. The loop has not touched that file.
+
+> **Amendment 1 (2026-07-XX): tier-C threading overlay reproducibility.** The capability-tier table (docs/capability-tiers.md, adopted at the Phase 0 gate with this amendment) defines a tier C overlay: threaded wasm kernels and threaded DuckDB, available only in the isolated deployment posture per ARCHITECTURE 8.1. This amendment extends this ADR's reproducibility contract to that overlay. Tier C threads parallelize only across chunks, never within a chunk's accumulation; the f64 hierarchical merge runs on CPU in the fixed chunk-index order this ADR prescribes; and thread count or scheduling never changes the merge tree's shape. Consequently B and B+C produce bitwise-identical fit results for a given chunk stream, as do A and A+C: the within-tier reproducibility guarantee keys on the compute axis (A or B) alone, and the C overlay is a performance property, never a numerical one. The tier-C conformance fixture (capability-tiers.md Section 8) asserts this contract in CI.
+
+On approval: date the amendment, append it to ADR-0008, update the ADR's Status line to "Accepted (amended v1.1: tier-C overlay reproducibility)", and mark docs/capability-tiers.md Section 10 adopted. Any wording change you make supersedes the proposal; the table's Section 2 text should then be aligned if the substance shifts.
+
 ## State at escalation
 
 - **Met and green on `main` (7 of 9 data-plane P0 REQs):** SP-DP-001, 002, 003, 004, 005, 006, 010, plus SP-UX-001. CI green; Pages live.

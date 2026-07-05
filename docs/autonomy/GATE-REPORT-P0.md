@@ -52,3 +52,33 @@ CI green on the adjudicated commit lineage (`main`). Each iteration's push was w
 3. **SP-DP-008** unblocks with the same mirror.
 
 Do not advance CURRENT_PHASE. The loop is paused at the escalation; the recommended path is Option 1 in ESCALATION.md (human provisions the mirror and disposes the amendment; the loop finishes the gate).
+
+## Adjudication 2026-07-04
+
+**Verdict: PASS.** Adjudicated at commit `fd3d741` on `main`, CI green on that commit. Supersedes the 2026-07-03 FAIL, whose two blocking items were disposed by the human on 2026-07-04 (ESCALATION.md Disposition): Option 2 amended SP-DP-007/008 acceptance (REQUIREMENTS.md v0.7) to accept the documented simulated reference baseline pending the demo mirror, and ADR-0008 Amendment 1 was approved as drafted, adopting the Q1 capability-tier table.
+
+### Delta from the 2026-07-03 adjudication
+
+| Item        | Then                          | Now                                                                                                                                           |
+| ----------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| SP-DP-007   | FAIL (mirror-only acceptance) | PASS: probe p95 138 ms < 200 ms, `pnpm perf` 2026-07-04 under the v0.7 acceptance (simulated 50 ms RTT / 50 Mbps, AVIRIS-class sharded store) |
+| SP-DP-008   | FAIL (same)                   | PASS: cold-open to composite data 641 ms < 5 s, same run                                                                                      |
+| Q1 adoption | BLOCKED (ADR amendment)       | CLOSED: ADR-0008 Amendment 1 applied (human-disposed), capability-tiers.md adopted, SPEC Q1 resolved                                          |
+
+All other rows carry over unchanged from the 2026-07-03 table (SP-DP-001..006, SP-DP-010, SP-UX-001: PASS with executed evidence).
+
+### Fresh evidence at this adjudication
+
+`pnpm verify` 103 tests + build (52.61 kB vs 5 MB budget); `pnpm test:parity` 3 tests; `pnpm audit:prod` clean; `pnpm perf` probe p95 138 ms / cold-open 641 ms; CI run green on `fd3d741`.
+
+### Standing obligations carried into Phase 1 (debt ledger)
+
+- Mirror measurement for SP-DP-007/008 (`PERF_STORE_URL=... pnpm perf` on reference hardware) when the mirror exists; the v0.7 acceptance names it a follow-up obligation.
+- Open Phase 0 ROADMAP scope not gate-cited: CLI v0, memory governor + chunk cache/scheduler (SP-DP-013/014 are P1-gated and land in Phase 1), mirror bucket.
+- SP-DP-005 producer-half re-verify when CLI v0 lands; SP-DP-006 warning surface when the first UI warning exists.
+
+### Handoff: Phase 1 gate set (ROADMAP)
+
+SP-DP-011 (ENVI path), SP-DP-012, SP-DP-013, SP-DP-014, SP-RP-001, SP-RP-003, SP-RP-005, SP-RP-006, SP-CO-001, SP-CO-002, SP-CO-003, SP-CO-004, SP-XP-002, SP-XP-003, SP-XP-004, SP-UX-002, SP-UX-003, SP-UX-004, SP-UX-005, SP-UX-008. Phase 1 delivers the view-only triad: spatial/spectral/feature-space panels, Mosaic + DuckDB-WASM brushing at the 100 ms target, USGS library probe-to-match, ENVI local ingest, and the first-run surface. Design review binds every SP-RP and SP-UX item (DESIGN-BRIEF v1.1); WOFF2 bundling and the token migration debt come due with the first numeric-readout surface.
+
+CURRENT_PHASE advanced to 1 in STATE.md.

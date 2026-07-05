@@ -1,6 +1,6 @@
 # Spectral Prism: Loop State Ledger
 
-CURRENT_PHASE: 0
+CURRENT_PHASE: 1
 LAST_AUDIT: 2026-07-03, /security-review per iteration through SP-DP-010. Found+fixed: SP-DP-004 Low (prototype-chain unit lookup), SP-DP-005 F-crit (SSRF/store-root escape, safeSubpath allowlist). SP-DP-001/002/003/006/010 clean. ZEP0005 posture verifier CONFIRMED.
 OPEN_ESCALATION: none (2026-07-03 escalation fully disposed 2026-07-04: Option 2 for the perf acceptance, ADR-0008 Amendment 1 approved as drafted; see ESCALATION.md Disposition)
 
@@ -8,7 +8,34 @@ OPEN_ESCALATION: none (2026-07-03 escalation fully disposed 2026-07-04: Option 2
 
 Single source of loop truth, updated at the end of every iteration (session protocol step 9) and by the phase-gate skill. The SessionStart hook prints the top of this file into every session. If git history and this ledger disagree, git wins and the first act of the session is reconciliation.
 
-## Requirement Status: Phase 0
+## Requirement Status: Phase 1
+
+| REQ       | Status | Evidence | Notes                                                                |
+| --------- | ------ | -------- | -------------------------------------------------------------------- |
+| SP-DP-011 | unmet  |          | ENVI path only in Phase 1; GeoTIFF/NetCDF are P3                     |
+| SP-DP-012 | unmet  |          | worker topology per ARCH 2.6                                         |
+| SP-DP-013 | unmet  |          | incl. abort-scope tests and the coalesced-abort caveat (debt ledger) |
+| SP-DP-014 | unmet  |          | memory governor over all pools                                       |
+| SP-RP-001 | unmet  |          | design review required                                               |
+| SP-RP-003 | unmet  |          | design review required                                               |
+| SP-RP-005 | unmet  |          | design review required                                               |
+| SP-RP-006 | unmet  |          | design review required                                               |
+| SP-CO-001 | unmet  |          | 100 ms brush target                                                  |
+| SP-CO-002 | unmet  |          | deterministic sampling                                               |
+| SP-CO-003 | unmet  |          | USGS probe-to-match                                                  |
+| SP-CO-004 | unmet  |          | Parquet row-group alignment                                          |
+| SP-XP-002 | unmet  |          | nm API audit                                                         |
+| SP-XP-003 | unmet  |          | degradation matrix rows as fixtures                                  |
+| SP-XP-004 | unmet  |          | bundle budget gate active                                            |
+| SP-UX-002 | unmet  |          | tokens only; WOFF2 debt due                                          |
+| SP-UX-003 | unmet  |          | quiet-indicator family                                               |
+| SP-UX-004 | unmet  |          | tabular numerals                                                     |
+| SP-UX-005 | unmet  |          | verdicts ledgered here                                               |
+| SP-UX-008 | unmet  |          | first-run surface                                                    |
+
+Phase 0 closed 2026-07-04: GATE-REPORT-P0.md Adjudication 2026-07-04, verdict PASS at fd3d741.
+
+## Requirement Status: Phase 0 (closed)
 
 | REQ       | Status | Evidence                                                                                                                                                                                                                                                                                              | Notes                                                                                                                            |
 | --------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |

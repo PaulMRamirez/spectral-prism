@@ -1,7 +1,9 @@
 # ADR-0008: Numerical Policy for Streaming Fits and Cross-Tier Parity
 
-**Status:** Accepted
-**Date:** 2026-07-01 (added by spec review v0.2, findings F20/F21)
+**Status:** Accepted (amended v1.1: tier-C overlay reproducibility)
+**Date:** 2026-07-01 (added by spec review v0.2, findings F20/F21); amended 2026-07-04
+
+**Amendment 1 (2026-07-04, human-disposed per docs/autonomy/ESCALATION.md): tier-C threading overlay reproducibility.** The capability-tier table (docs/capability-tiers.md, adopted at the Phase 0 gate with this amendment) defines a tier C overlay: threaded wasm kernels and threaded DuckDB, available only in the isolated deployment posture per ARCHITECTURE 8.1. This amendment extends this ADR's reproducibility contract to that overlay. Tier C threads parallelize only across chunks, never within a chunk's accumulation; the f64 hierarchical merge runs on CPU in the fixed chunk-index order this ADR prescribes; and thread count or scheduling never changes the merge tree's shape. Consequently B and B+C produce bitwise-identical fit results for a given chunk stream, as do A and A+C: the within-tier reproducibility guarantee keys on the compute axis (A or B) alone, and the C overlay is a performance property, never a numerical one. The tier-C conformance fixture (capability-tiers.md Section 8) asserts this contract in CI.
 
 ## Context
 

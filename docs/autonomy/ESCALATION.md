@@ -2,13 +2,13 @@
 
 **Date:** 2026-07-03
 **Raised by:** the autonomous loop, at the Phase 0 gate check (AUTONOMY-PLAN Section 3 step 10, Section 7).
-**Status of the loop:** paused, awaiting disposition. Per AUTONOMY-PLAN Section 7, an escalation is loop success, not failure.
+**Status of the loop:** RESOLVED 2026-07-04 (both blockers disposed; see Disposition below). Per AUTONOMY-PLAN Section 7, an escalation is loop success, not failure.
 
 ## Disposition (2026-07-04, Paul Ramirez)
 
 **Blocker 1: Option 2 chosen.** SP-DP-007/008 acceptance is amended to accept the documented simulated reference baseline for the P0 gate, with the demo-mirror measurement remaining a ledgered follow-up obligation. Applied to REQUIREMENTS.md (v0.7) by the loop under this disposition; the amendment is recorded in the annex's status line and the mirror obligation in the STATE.md debt ledger.
 
-**Blocker 2: pending.** The proposed ADR-0008 amendment below still awaits a separate yes/no; the gate cannot pass without Q1 adoption.
+**Blocker 2: approved as drafted (2026-07-04).** ADR-0008 Amendment 1 applied; docs/capability-tiers.md marked adopted; SPEC Q1 closed. Both blockers are now disposed and this escalation is resolved; the gate re-adjudicates below in GATE-REPORT-P0.md.
 
 ## What fired
 

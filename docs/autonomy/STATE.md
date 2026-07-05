@@ -2,7 +2,7 @@
 
 CURRENT_PHASE: 0
 LAST_AUDIT: 2026-07-03, /security-review per iteration through SP-DP-010. Found+fixed: SP-DP-004 Low (prototype-chain unit lookup), SP-DP-005 F-crit (SSRF/store-root escape, safeSubpath allowlist). SP-DP-001/002/003/006/010 clean. ZEP0005 posture verifier CONFIRMED.
-OPEN_ESCALATION: docs/autonomy/ESCALATION.md, partially disposed 2026-07-04: Blocker 1 resolved by Option 2 (REQUIREMENTS.md v0.7, SP-DP-007/008 now met on the simulated baseline). Blocker 2 (Q1 adoption via the proposed ADR-0008 amendment) still awaits the human yes/no; the gate cannot pass without it.
+OPEN_ESCALATION: none (2026-07-03 escalation fully disposed 2026-07-04: Option 2 for the perf acceptance, ADR-0008 Amendment 1 approved as drafted; see ESCALATION.md Disposition)
 
 ## How to read this file
 
@@ -22,7 +22,7 @@ Single source of loop truth, updated at the end of every iteration (session prot
 | SP-DP-008 | met    | Same harness run 2026-07-04: cold-open to composite data 641 ms < 5 s under the simulated baseline per the v0.7 acceptance                                                                                                                                                                            | Excludes GPU render (Phase 1); mirror obligation shared with SP-DP-007                                                           |
 | SP-DP-010 | met    | Commit 4311bf4: 7-test auth conformance against an auth-gated fixture server: header/bearer/URL-rewrite hook modes on ZarrHttpStore and IcechunkStore, missing-credential surfaces an error, and an origin-scoped token proven not to leak to a foreign virtual-chunk host                            | closes the SP-DP-005 sharp edge in test; friendlier degradation-matrix auth message is SP-XP-003 (P1)                            |
 
-Bootstrap items (pre-REQ): monorepo scaffold [x], verify vocabulary wired [x], hooks confirmed firing [x], CI green on placeholder [x], Pages deploy live [x], DESIGN-BRIEF v1 authored [x], governance scaffold [x], name-collision scan [x], mirror bucket [ ], capability-tier table (Q1) [x], icechunk-js posture (Q5) [x].
+Bootstrap items (pre-REQ): monorepo scaffold [x], verify vocabulary wired [x], hooks confirmed firing [x], CI green on placeholder [x], Pages deploy live [x], DESIGN-BRIEF v1 authored [x], governance scaffold [x], name-collision scan [x], mirror bucket [ ] (deferred per Option 2 disposition; debt-ledgered), capability-tier table (Q1) [x] (adopted 2026-07-04, ADR-0008 Amendment 1), icechunk-js posture (Q5) [x].
 
 Bootstrap evidence (2026-07-02): scaffold commit 9116bba; pnpm verify, test:parity, audit:prod, e2e all green locally and in CI run 28638995432; Pages live at https://paulmramirez.github.io/spectral-prism/ (deploy run 28638995411); hooks dry-run: PreToolUse blocked a REQUIREMENTS.md edit, PostToolUse prettier reformatted a probe file, SessionStart printed this ledger. DESIGN-BRIEF v1.1 at docs/design/DESIGN-BRIEF.md; Q1 at docs/capability-tiers.md; Q5 at docs/research/icechunk-js-posture.md; scan at docs/research/name-collision-scan.md.
 
@@ -31,8 +31,7 @@ Mirror bucket: blocked on two prerequisites, deliberately unchecked. It carries 
 ## Human Follow-ups (non-blocking)
 
 - Claim the @spectral-prism npm org (scan could not rule out squatting anonymously; first come, first served).
-- At the Phase 0 gate: adopting docs/capability-tiers.md requires an ADR-0008 amendment recording the tier C overlay reproducibility rule (amendment protocol; the loop proposes, the human disposes).
-- Launch the Phase 0 /goal (AUTONOMY-PLAN Section 8 step 5) when ready.
+- Provision the demo mirror when convenient (public CORS bucket + scenes): the SP-DP-007/008 mirror measurement is a standing debt-ledger obligation under the v0.7 acceptance.
 
 ## Design-Review Verdicts (SP-UX-005 ledger)
 

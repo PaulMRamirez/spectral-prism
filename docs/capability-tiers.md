@@ -1,6 +1,6 @@
 # Capability Tiers
 
-**Status:** v1.1 draft, 2026-07-02, closes SPEC Q1 pending Phase 0 gate adoption
+**Status:** v1.1, adopted 2026-07-04 at the Phase 0 gate per ADR-0008 Amendment 1 (tier-C overlay reproducibility); closes SPEC Q1
 **References:** SPEC Section 10 (Q1), ARCHITECTURE Sections 3, 8.1, 9; ADR-0004; ADR-0008; REQUIREMENTS SP-CP-003, SP-CP-004, SP-CP-005, SP-CP-006, SP-XP-003, SP-UX-003; docs/design/DESIGN-BRIEF.md (vocabulary doctrine)
 
 ---
